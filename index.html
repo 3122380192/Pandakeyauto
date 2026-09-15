@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APKRemote Pro - Điều Khiển Điện Thoại Chơi Game</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">🎮</span>
+        <div>
+          <h1>APKRemote Pro</h1>
+          <p class="subtitle">Điều khiển Android & iPhone bằng chuột & phím PC</p>
+        </div>
+      </div>
+      <div class="device-pill" id="devicePill">
+        <span class="dot" id="statusDot"></span>
+        <span id="deviceText">Đang tìm điện thoại...</span>
+      </div>
+    </header>
+
+    <!-- 3 Tabs Tách Biệt Rõ Ràng -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="tabGame">🤖 1. Android & Chơi Game</button>
+      <button class="tab-btn" data-tab="tabApple">🍎 2. iPhone / iPad (iOS)</button>
+      <button class="tab-btn" data-tab="tabFeatures">⚙️ 3. Tiện Ích & Mẹo Chống Sếp</button>
+    </div>
+
+    <!-- ================= TAB 1: ANDROID & CHƠI GAME ================= -->
+    <section class="tab-content active" id="tabGame">
+      <!-- Nút Bật / Tắt To Nổi Bật -->
+      <div class="action-box">
+        <button class="btn-main" id="btnToggleControl">
+          <span class="btn-icon">⚡</span>
+          <div>
+            <strong id="btnToggleTitle">BẬT ĐIỀU KHIỂN</strong>
+            <small id="btnToggleSub">Phím tắt nhanh: Ctrl + Alt + K | Đổi chuột: Alt + 3</small>
+          </div>
+        </button>
+        <button class="btn-stop" id="btnStop" disabled>DỪNG</button>
+      </div>
+
+      <!-- BOSS KEY & LOCK BANNER: Phím Tắt Khẩn Cấp -->
+      <div class="boss-key-card">
+        <div class="boss-badge">🚨 PHÍM TẮT KHẨN CẤP CHỐNG SẾP (DUAL BOSS KEY)</div>
+        <div class="boss-content">
+          <div class="boss-item-row">
+            <span class="kbd">Alt + X</span>
+            <div>
+              <strong>Tắt đèn màn hình (Không khóa máy) & Ẩn cửa sổ PC</strong>
+              <small>Màn hình điện thoại đen sì nhưng game/combat vẫn chạy ngầm không bị ngắt kết nối.</small>
+            </div>
+          </div>
+          <div class="boss-item-row" style="margin-top: 6px;">
+            <span class="kbd">Alt + Z</span>
+            <div>
+              <strong>Khóa màn hình điện thoại ngay lập tức (Lock Screen)</strong>
+              <small>Bấm nút nguồn ảo khóa hẳn màn hình điện thoại, thu nhỏ cửa sổ và nhả chuột về PC ngay lập tức.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Khu vực Panda Mouse Pro Keymapper -->
+      <div class="panda-card">
+        <div class="panda-header">
+          <span class="panda-badge">🐼 PANDA MOUSE PRO</span>
+          <strong>Kích Hoạt Keymapping Chơi Game Mobile</strong>
+        </div>
+        <p class="panda-desc">
+          Điện thoại bạn <strong>đã có sẵn app Panda Mouse Pro</strong>! Bấm nút bên dưới để app tự động kích hoạt (Active) qua ADB mà không cần chạy lệnh thủ công. Sau đó mở Panda trên điện thoại để gán nút WASD, ngắm bắn, skill tùy ý.
+        </p>
+        <button class="btn-panda" id="btnActivatePanda">
+          🚀 BẤM ĐỂ KÍCH HOẠT PANDA MOUSE (1-CLICK ACTIVATE)
+        </button>
+      </div>
+
+      <!-- Hướng dẫn phím tắt chuyển đổi chuột -->
+      <div class="tip-card">
+        <div class="tip-row">
+          <span class="step-badge">🔥</span>
+          <p>Bấm <span class="kbd">Alt + 3</span> để <strong>chuyển đổi chuột phím qua lại 2 chiều</strong> giữa Điện Thoại và Máy Tính tức thì!</p>
+        </div>
+        <div class="tip-row">
+          <span class="step-badge">✨</span>
+          <p>Phím <span class="kbd">Alt Trái</span> vẫn giữ nguyên: Nhả chuột quay về máy tính bất cứ lúc nào.</p>
+        </div>
+      </div>
+
+      <!-- Tùy Chọn Hiển Thị: TÍCH VÀO LÀ ĂN NGAY LẬP TỨC -->
+      <div class="settings-group">
+        <h3 class="section-title">Tùy Chọn Hiển Thị (Tự Động Áp Dụng Ngay Lập Tức)</h3>
+        <label class="checkbox-row highlight-check">
+          <input type="checkbox" id="chkMirrorScreen">
+          <div class="check-text">
+            <strong>Chiếu màn hình điện thoại lên máy tính (Tương tác như màn hình PC)</strong>
+            <small>Tích vào là hiện ngay cửa sổ màn hình điện thoại, tương tác trực tiếp bằng chuột và phím</small>
+          </div>
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" id="chkForwardAudio" checked>
+          <div class="check-text">
+            <strong>Phát âm thanh game qua máy tính</strong>
+            <small>Nghe tiếng game qua tai nghe hoặc loa PC</small>
+          </div>
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" id="chkStayAwake" checked>
+          <div class="check-text">
+            <strong>Giữ màn hình điện thoại luôn sáng</strong>
+            <small>Không bị tắt màn hình khi đang combat</small>
+          </div>
+        </label>
+      </div>
+
+      <!-- Bảng Phím Tắt Tóm Tắt Gọn Gàng -->
+      <div class="hotkey-summary">
+        <h3 class="section-title">Bảng Phím Tắt Nhanh</h3>
+        <div class="hotkey-grid">
+          <div class="hotkey-item highlight-boss"><span class="kbd">Alt + Z</span> <strong>Khóa màn hình điện thoại</strong></div>
+          <div class="hotkey-item highlight-boss"><span class="kbd">Alt + X</span> <strong>Tắt màn ĐT (Không khóa)</strong></div>
+          <div class="hotkey-item"><span class="kbd">Alt + 3</span> Chuyển chuột PC ⇋ Điện thoại</div>
+          <div class="hotkey-item"><span class="kbd">Ctrl + Alt + K</span> Bật / Tắt điều khiển</div>
+          <div class="hotkey-item"><span class="kbd">Alt Trái</span> Nhả chuột về máy tính</div>
+          <div class="hotkey-item"><span class="kbd">Chuột Phải</span> Nút Quay Lại (Back)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 2: IPHONE / IPAD (IOS) ================= -->
+    <section class="tab-content" id="tabApple">
+      <div class="apple-card">
+        <div class="apple-header">
+          <span class="apple-icon">🍎</span>
+          <div>
+            <h3>KẾT NỐI & ĐIỀU KHIỂN IPHONE / IPAD (APPLE iOS)</h3>
+            <span class="apple-status-text" id="appleStatus">Đang kiểm tra thiết bị Apple cắm qua USB...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3 class="section-title">1. Cắm Cáp Lightning / Type-C</h3>
+        <div class="ios-steps">
+          <p>• <strong>Bước 1:</strong> Dùng cáp cắm iPhone vào cổng USB máy tính.</p>
+          <p>• <strong>Bước 2:</strong> Mở khóa màn hình iPhone, bấm <strong>"Tin cậy máy tính này" (Trust This Computer)</strong> và nhập mật mã iPhone.</p>
+          <p>• <strong>Bước 3:</strong> Máy tính sẽ tự động nhận diện thiết bị Apple ở chế độ đồng bộ dữ liệu.</p>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3 class="section-title">2. Chiếu Màn Hình Không Dây Qua AirPlay (Chơi Game Cực Nét)</h3>
+        <div class="ios-steps">
+          <p>• Kết nối iPhone và PC vào <strong>chung 1 mạng Wi-Fi</strong> (hoặc iPhone phát Hotspot cho PC).</p>
+          <p>• Vuốt góc phải trên màn hình iPhone xuống để mở Trung tâm điều khiển > Chạm vào <strong>"Phản chiếu màn hình" (Screen Mirroring)</strong>.</p>
+          <p>• Toàn bộ hình ảnh và âm thanh game iPhone sẽ truyền thẳng lên PC với chất lượng Retina cực đẹp!</p>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3 class="section-title">3. Bật Con Trỏ Chuột Trên iPhone (AssistiveTouch)</h3>
+        <div class="ios-steps">
+          <p>Trên iPhone, vào <strong>Cài đặt > Trợ năng > Cảm ứng > Bật "AssistiveTouch"</strong>.</p>
+          <p>Con trỏ chuột tròn đặc trưng của iOS sẽ xuất hiện để bạn rê chuột điều khiển trực tiếp!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 3: TIỆN ÍCH & MẸO CHỐNG SẾP ================= -->
+    <section class="tab-content" id="tabFeatures">
+      <div class="settings-group">
+        <h3 class="section-title">🕵️ CÁC MẸO "TÀNG HÌNH" CHƠI GAME KHÔNG LO SẾP THẤY</h3>
+        <div class="stealth-tips">
+          <div class="tip-box">
+            <strong>1. Bộ Đôi Phím Tắt Khẩn Cấp (Alt+X & Alt+Z):</strong>
+            <p>• Muốn tắt đen màn hình điện thoại nhưng <em>game vẫn chạy ngầm bên trong</em>: Bấm <strong>Alt + X</strong>.</p>
+            <p>• Muốn <em>khóa hẳn màn hình điện thoại</em> (như vừa bấm nút nguồn xong): Bấm <strong>Alt + Z</strong>.</p>
+          </div>
+          <div class="tip-box">
+            <strong>2. Mẹo Đặt Điện Thoại & Góc Nhìn (Góc Chết):</strong>
+            <p>Đặt điện thoại tựa sát vào chân đế của màn hình máy tính (ngay bên dưới mép dưới màn hình) và cắm dây sạc USB. Người ngoài nhìn từ phía sau hoặc đi lướt qua sẽ đinh ninh bạn đang cắm sạc điện thoại và mắt nhìn vào màn hình làm việc.</p>
+          </div>
+          <div class="tip-box">
+            <strong>3. Phím Tắt Đổi Desktop Ảo (Windows + Ctrl + Mũi tên):</strong>
+            <p>Tạo Virtual Desktop thứ 2 (Desktop ảo sạch sẽ chỉ có Word/Excel). Khi sếp đến gần, bấm <strong>Ctrl + Windows + Mũi tên</strong> để bay sang màn hình làm việc trong 0.05 giây!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tiện ích Mới: Gõ Chữ & Chụp Ảnh Màn Hình -->
+      <div class="settings-group">
+        <h3 class="section-title">🚀 Tiện Ích Đồng Bộ Văn Bản, Mở Link & Chụp Màn Hình</h3>
+        <div class="text-sync-box">
+          <input type="text" id="txtSendText" placeholder="Nhập văn bản từ máy tính để dán vào điện thoại...">
+          <button class="btn-action" id="btnSendText">Gửi Vào Máy</button>
+          <button class="btn-action btn-outline" id="btnScreenshot">📸 Chụp Ảnh ĐT</button>
+        </div>
+        <div class="text-sync-box" style="margin-top: 8px;">
+          <input type="text" id="txtUrl" placeholder="Nhập link website (ví dụ: youtube.com) để mở trên điện thoại...">
+          <button class="btn-action" id="btnOpenUrl">🌐 Mở Trên ĐT</button>
+        </div>
+      </div>
+
+      <!-- Điều Hướng Nhanh Android -->
+      <div class="settings-group">
+        <h3 class="section-title">Phím Lệnh Android Nhanh</h3>
+        <div class="btn-grid">
+          <button class="btn-quick" data-key="4">🔙 Quay Lại (Back)</button>
+          <button class="btn-quick" data-key="3">🏠 Màn Hình Chính (Home)</button>
+          <button class="btn-quick" data-key="187">📑 Đa Nhiệm (Recents)</button>
+          <button class="btn-quick" data-key="24">🔊 Tăng Âm Lượng</button>
+          <button class="btn-quick" data-key="25">🔉 Giảm Âm Lượng</button>
+          <button class="btn-quick" data-key="26">🔒 Bật/Tắt Nguồn</button>
+        </div>
+      </div>
+
+      <!-- Tiện ích hỗ trợ -->
+      <div class="settings-group">
+        <h3 class="section-title">Tiện Ích & Khắc Phục Lỗi</h3>
+        <div class="tool-actions">
+          <button class="btn-action btn-outline" id="btnRestartAdb">🔄 Khởi động lại kết nối (Restart ADB)</button>
+          <button class="btn-action btn-outline" id="btnRefresh">🔍 Quét lại cổng USB</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span id="footerLog">Hệ thống sẵn sàng. Bấm Alt+Z (Khóa ĐT) | Alt+X (Ẩn Gấp) | Alt+3 (Đổi Chuột).</span>
+    </footer>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+node_modules/
+.app_data/
+*.log
+screenshot_*.png
+temp_screen.png
+scrcpy.zip
+temp_scrcpy/
