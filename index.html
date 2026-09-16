@@ -147,152 +147,164 @@
         <div class="hotkey-chip"><span class="kbd">Alt+Z</span> Khóa Màn ĐT</div>
       </div>
 
-      <!-- TINH CHỈNH TỐI ƯU HÌNH ẢNH & ĐỘ TRỄ NÂNG CAO -->
-      <div class="settings-group">
-        <div class="section-header-flex">
-          <h3 class="section-title">⚙️ Tinh Chỉnh Thông Số & Tín Hiệu</h3>
-          <span class="section-sub-tip">Tự động lưu vào Profile</span>
-        </div>
+      <!-- BỐ CỤC 2 PHẦN GỌN GÀNG (SPLIT 2-COLUMN LAYOUT) -->
+      <div class="settings-two-columns">
         
-        <div class="tuning-grid">
-          <!-- Video Codec -->
-          <div class="tuning-item">
-            <label for="selCodec">Bộ Mã Hóa (Codec):</label>
-            <select id="selCodec" class="select-modern">
-              <option value="h265" selected>H.265 / HEVC (Siêu Nhẹ, Đề Xuất)</option>
-              <option value="h264">H.264 (Tương Thích Mọi Máy)</option>
-              <option value="av1">AV1 (Nén Cao Cấp)</option>
-            </select>
+        <!-- CỘT 1: TINH CHỈNH TÍN HIỆU & ĐỘ NHẠY CHUỘT -->
+        <div class="settings-col-card">
+          <div class="section-header-flex">
+            <h3 class="section-title">⚙️ Tinh Chỉnh Thông Số & Độ Nhạy</h3>
+            <span class="section-sub-tip">Tự động lưu Profile</span>
           </div>
+          
+          <div class="tuning-grid">
+            <!-- Video Codec -->
+            <div class="tuning-item">
+              <label for="selCodec">Bộ Mã Hóa (Codec):</label>
+              <select id="selCodec" class="select-modern">
+                <option value="h265" selected>H.265 / HEVC (Siêu Nhẹ)</option>
+                <option value="h264">H.264 (Tương Thích Cao)</option>
+                <option value="av1">AV1 (Nén Cao Cấp)</option>
+              </select>
+            </div>
 
-          <!-- Max FPS -->
-          <div class="tuning-item">
-            <label for="selFps">Khung Hình (FPS):</label>
-            <select id="selFps" class="select-modern">
-              <option value="120" selected>120 FPS (Phản Xạ Cực Nhanh)</option>
-              <option value="90">90 FPS (Mượt Mà Ổn Định)</option>
-              <option value="60">60 FPS (Chuẩn Mặc Định)</option>
-              <option value="30">30 FPS (Tiết Kiệm Pin)</option>
-            </select>
-          </div>
+            <!-- Max FPS -->
+            <div class="tuning-item">
+              <label for="selFps">Khung Hình (FPS):</label>
+              <select id="selFps" class="select-modern">
+                <option value="120" selected>120 FPS (Phản Xạ Cực Nhanh)</option>
+                <option value="90">90 FPS (Mượt Mà Ổn Định)</option>
+                <option value="60">60 FPS (Chuẩn Mặc Định)</option>
+                <option value="30">30 FPS (Tiết Kiệm Pin)</option>
+              </select>
+            </div>
 
-          <!-- Video Buffer -->
-          <div class="tuning-item">
-            <label for="selDisplayBuffer">Bộ Đệm Độ Trễ (Buffer):</label>
-            <select id="selDisplayBuffer" class="select-modern">
-              <option value="0" selected>0 ms (Zero Delay Tức Thì)</option>
-              <option value="10">10 ms (Cực Thấp Chống Giật)</option>
-              <option value="25">25 ms (Ổn Định Cho Wi-Fi)</option>
-              <option value="50">50 ms (Mạng Chậm / Yếu)</option>
-            </select>
-          </div>
+            <!-- Video Buffer -->
+            <div class="tuning-item">
+              <label for="selDisplayBuffer">Bộ Đệm Trễ (Buffer):</label>
+              <select id="selDisplayBuffer" class="select-modern">
+                <option value="0" selected>0 ms (Zero Delay Tức Thì)</option>
+                <option value="10">10 ms (Cực Thấp Chống Giật)</option>
+                <option value="25">25 ms (Ổn Định Cho Wi-Fi)</option>
+                <option value="50">50 ms (Mạng Chậm / Yếu)</option>
+              </select>
+            </div>
 
-          <!-- Max Size (Độ Phân Giải) -->
-          <div class="tuning-item">
-            <label for="selMaxSize">Độ Phân Giải Tối Đa:</label>
-            <select id="selMaxSize" class="select-modern">
-              <option value="1080" selected>1080p Full HD (Chuẩn Nét)</option>
-              <option value="1440">1440p / 2K (Siêu Nét Màn PC)</option>
-              <option value="720">720p HD (Tối Ưu Tốc Độ)</option>
-              <option value="0">Gốc Điện Thoại (Native)</option>
-            </select>
-          </div>
+            <!-- Max Size -->
+            <div class="tuning-item">
+              <label for="selMaxSize">Độ Phân Giải:</label>
+              <select id="selMaxSize" class="select-modern">
+                <option value="1080" selected>1080p Full HD (Chuẩn Nét)</option>
+                <option value="1440">1440p / 2K (Siêu Nét PC)</option>
+                <option value="720">720p HD (Tối Ưu Tốc Độ)</option>
+                <option value="0">Gốc Điện Thoại (Native)</option>
+              </select>
+            </div>
 
-          <!-- Bitrate -->
-          <div class="tuning-item">
-            <label for="selBitrate">Băng Thông Video (Bitrate):</label>
-            <select id="selBitrate" class="select-modern">
-              <option value="16M" selected>16 Mbps (Nét Căng Mặc Định)</option>
-              <option value="24M">24 Mbps (Đồ Họa Cao Cấp)</option>
-              <option value="12M">12 Mbps (Cân Bằng Mượt)</option>
-              <option value="8M">8 Mbps (Mạng Yếu / Treo Máy)</option>
-            </select>
-          </div>
+            <!-- Bitrate -->
+            <div class="tuning-item">
+              <label for="selBitrate">Băng Thông (Bitrate):</label>
+              <select id="selBitrate" class="select-modern">
+                <option value="16M" selected>16 Mbps (Nét Căng Mặc Định)</option>
+                <option value="24M">24 Mbps (Đồ Họa Cao Cấp)</option>
+                <option value="12M">12 Mbps (Cân Bằng Mượt)</option>
+                <option value="8M">8 Mbps (Mạng Yếu / Treo Máy)</option>
+              </select>
+            </div>
 
-          <!-- Render Engine -->
-          <div class="tuning-item">
-            <label for="selRenderDriver">Bộ Dựng Hình (GPU Engine):</label>
-            <select id="selRenderDriver" class="select-modern">
-              <option value="direct3d11" selected>Direct3D 11 (GPU Windows Tối Ưu)</option>
-              <option value="opengl">OpenGL</option>
-            </select>
-          </div>
+            <!-- Render Engine -->
+            <div class="tuning-item">
+              <label for="selRenderDriver">Bộ Dựng Hình (GPU Engine):</label>
+              <select id="selRenderDriver" class="select-modern">
+                <option value="direct3d11" selected>Direct3D 11 (GPU Windows)</option>
+                <option value="opengl">OpenGL</option>
+              </select>
+            </div>
 
-          <!-- Tốc độ chuột trên Điện thoại -->
-          <div class="tuning-item">
-            <label for="selMouseSpeed">Độ Nhạy Chuột ĐT (Sensitivity):</label>
-            <select id="selMouseSpeed" class="select-modern">
-              <option value="0.15">15% (Rất chậm - Sniper ngắm xa)</option>
-              <option value="0.25">25% (Chậm - Chuột DPI cao 1600+)</option>
-              <option value="0.35">35% (Vừa vặn - Ghìm tâm cực đầm)</option>
-              <option value="0.5" selected>50% (Chuẩn FPS - Êm ái vừa tay)</option>
-              <option value="0.75">75% (Nhanh - Phản xạ lẹ)</option>
-              <option value="1.0">100% (Gốc PC - Không hãm tốc)</option>
-            </select>
+            <!-- Tốc độ chuột trên Điện thoại -->
+            <div class="tuning-item tuning-full-col">
+              <label for="selMouseSpeed">Độ Nhạy Chuột ĐT (Sensitivity):</label>
+              <select id="selMouseSpeed" class="select-modern">
+                <option value="0.15">15% (Rất chậm - Sniper ngắm xa)</option>
+                <option value="0.25">25% (Chậm - Chuột DPI cao 1600+)</option>
+                <option value="0.35">35% (Vừa vặn - Ghìm tâm cực đầm)</option>
+                <option value="0.5" selected>50% (Chuẩn FPS - Êm ái vừa tay)</option>
+                <option value="0.75">75% (Nhanh - Phản xạ lẹ)</option>
+                <option value="1.0">100% (Gốc PC - Không hãm tốc)</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <!-- Checkbox Options Tối Ưu -->
-        <div class="checkbox-row-container">
-          <label class="checkbox-row highlight-check">
-            <input type="checkbox" id="chkMirrorScreen" checked>
-            <div class="check-text">
-              <strong>Chiếu màn hình điện thoại lên máy tính (Cửa sổ tương tác)</strong>
-              <small>Bỏ tích nếu chỉ muốn điều khiển thẳng trên màn hình thật của điện thoại để đạt 0% CPU.</small>
-            </div>
-          </label>
+        <!-- CỘT 2: TÙY CHỌN CHỨC NĂNG & PANDA MOUSE PRO -->
+        <div class="settings-col-card">
+          <div class="section-header-flex">
+            <h3 class="section-title">🛡️ Quyền & Tính Năng Điều Khiển</h3>
+            <span class="section-sub-tip">Bật / Tắt theo nhu cầu</span>
+          </div>
 
-          <label class="checkbox-row highlight-check">
-            <input type="checkbox" id="chkEnableControl" checked>
-            <div class="check-text">
-              <strong>Cho phép chuột & bàn phím máy tính điều khiển điện thoại</strong>
-              <small>Bấm chuột và gõ phím vào game. Bỏ tích nếu chỉ muốn xem hình (View-Only) và bấm tay trên điện thoại.</small>
-            </div>
-          </label>
+          <div class="checkbox-row-container">
+            <label class="checkbox-row highlight-check">
+              <input type="checkbox" id="chkMirrorScreen" checked>
+              <div class="check-text">
+                <strong>Chiếu màn hình điện thoại lên PC</strong>
+                <small>Bỏ tích nếu chỉ điều khiển trên màn thật ĐT (0% CPU, ẩn tab đen).</small>
+              </div>
+            </label>
 
-          <label class="checkbox-row highlight-check">
-            <input type="checkbox" id="chkUhidInput" checked>
-            <div class="check-text">
-              <strong>Chế độ chuột & phím phần cứng UHID (Khắc phục Vivo / Xiaomi chặn)</strong>
-              <small>Giả lập chuột & phím USB trực tiếp qua Linux kernel, không bị lớp bảo mật Android chặn.</small>
-            </div>
-          </label>
+            <label class="checkbox-row highlight-check">
+              <input type="checkbox" id="chkEnableControl" checked>
+              <div class="check-text">
+                <strong>Cho phép chuột & bàn phím điều khiển điện thoại</strong>
+                <small>Bấm chuột và gõ phím vào game điện thoại.</small>
+              </div>
+            </label>
 
-          <label class="checkbox-row">
-            <input type="checkbox" id="chkTurnScreenOff">
-            <div class="check-text">
-              <strong>Tắt màn hình điện thoại khi chiếu lên máy tính (Tiết kiệm pin & Mát máy)</strong>
-              <small>Màn hình thật sẽ tối lại để chống nóng máy. Bỏ tích nếu bạn muốn bấm ngón tay trên màn hình điện thoại.</small>
-            </div>
-          </label>
+            <label class="checkbox-row highlight-check">
+              <input type="checkbox" id="chkUhidInput" checked>
+              <div class="check-text">
+                <strong>Chế độ chuột & phím phần cứng UHID</strong>
+                <small>Khắc phục triệt để lỗi Vivo/Xiaomi chặn thao tác chạm.</small>
+              </div>
+            </label>
 
-          <label class="checkbox-row">
-            <input type="checkbox" id="chkForwardAudio" checked>
-            <div class="check-text">
-              <strong>Truyền âm thanh game sang PC (Low Latency 10ms)</strong>
-              <small>Nghe rõ tiếng bước chân kẻ địch qua tai nghe máy tính.</small>
-            </div>
-          </label>
+            <label class="checkbox-row">
+              <input type="checkbox" id="chkTurnScreenOff">
+              <div class="check-text">
+                <strong>Tắt màn hình thật của điện thoại</strong>
+                <small>Tiết kiệm pin và chống nóng máy khi chiếu lên PC.</small>
+              </div>
+            </label>
 
-          <label class="checkbox-row">
-            <input type="checkbox" id="chkStayAwake" checked>
-            <div class="check-text">
-              <strong>Giữ điện thoại luôn thức khi cắm cáp</strong>
-              <small>Không bị tắt nguồn hoặc khóa máy khi đang combat.</small>
+            <label class="checkbox-row">
+              <input type="checkbox" id="chkForwardAudio" checked>
+              <div class="check-text">
+                <strong>Truyền âm thanh game sang PC (10ms)</strong>
+                <small>Nghe tiếng bước chân kẻ địch qua tai nghe máy tính.</small>
+              </div>
+            </label>
+
+            <label class="checkbox-row">
+              <input type="checkbox" id="chkStayAwake" checked>
+              <div class="check-text">
+                <strong>Giữ điện thoại luôn thức khi cắm cáp</strong>
+                <small>Không bị tắt nguồn hoặc khóa màn hình giữa trận chiến.</small>
+              </div>
+            </label>
+          </div>
+
+          <!-- Panda Mouse Pro Banner Tích Hợp Gọn -->
+          <div class="panda-card-compact">
+            <div class="panda-left">
+              <span class="panda-badge">🐼 PANDA MOUSE PRO</span>
+              <p class="panda-desc">Kích hoạt keymapping WASD, ngắm bắn chuột 1-Click.</p>
             </div>
-          </label>
+            <button class="btn-panda" id="btnActivatePanda">
+              🚀 KÍCH HOẠT PANDA
+            </button>
+          </div>
         </div>
-      </div>
 
-      <!-- Khu vực Panda Mouse Pro Keymapper -->
-      <div class="panda-card">
-        <div class="panda-left">
-          <span class="panda-badge">🐼 PANDA MOUSE PRO</span>
-          <p class="panda-desc">Kích hoạt keymapping WASD, ngắm bắn chuột trên game mobile qua lệnh 1-Click.</p>
-        </div>
-        <button class="btn-panda" id="btnActivatePanda">
-          🚀 KÍCH HOẠT PANDA (1-CLICK)
-        </button>
       </div>
 
     </section>

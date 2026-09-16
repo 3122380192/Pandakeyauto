@@ -1,3 +1,4 @@
 @echo off
-start "" /B npm start
+cd /d "%~dp0"
+start "" wscript "%~dp0start.vbs"
 exit

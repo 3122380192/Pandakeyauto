@@ -314,6 +314,7 @@ body {
   border-radius: var(--radius-lg);
   padding: 10px 14px;
   box-shadow: var(--shadow-card);
+  flex-shrink: 0;
 }
 
 .profile-header-row {
@@ -478,14 +479,17 @@ body {
 
 /* Mode Control Card (HUD Unit) */
 .mode-control-card {
-  background: linear-gradient(135deg, rgba(16, 24, 40, 0.8), rgba(20, 32, 54, 0.85));
+  background: linear-gradient(135deg, rgba(16, 24, 40, 0.85), rgba(20, 32, 54, 0.9));
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 242, 254, 0.25);
+  border: 1px solid rgba(0, 242, 254, 0.3);
   border-radius: var(--radius-lg);
   padding: 8px 12px;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.6), 0 0 14px rgba(0, 242, 254, 0.1);
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
+  min-height: 84px;
+  margin: 2px 0;
 }
 
 .mode-control-card::before {
@@ -632,6 +636,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 140px;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .btn-mirror-start {
@@ -747,6 +752,7 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 6px 10px;
+  flex-shrink: 0;
 }
 
 .hotkey-chip {
@@ -769,52 +775,71 @@ body {
 }
 
 /* ==========================================================================
-   SETTINGS & TUNING SECTION
+   SETTINGS & SPLIT 2-COLUMN SECTION
    ========================================================================== */
-.settings-group {
+.settings-two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 780px) {
+  .settings-two-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.settings-col-card {
   background: var(--bg-card);
   backdrop-filter: blur(16px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 10px 14px;
+  padding: 10px 12px;
   box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .section-header-flex {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  padding-bottom: 2px;
 }
 
 .section-title {
   font-family: var(--font-display);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 800;
   color: #fff;
   letter-spacing: 0.3px;
 }
 
 .section-sub-tip {
-  font-size: 0.66rem;
+  font-size: 0.65rem;
   color: var(--text-dim);
 }
 
 .tuning-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 10px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 7px;
+}
+
+.tuning-full-col {
+  grid-column: span 2;
 }
 
 .tuning-item {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 .tuning-item label {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   color: var(--text-muted);
   font-weight: 600;
 }
@@ -823,9 +848,9 @@ body {
   background: var(--bg-input);
   border: 1px solid var(--border-subtle);
   color: #fff;
-  padding: 5px 8px;
+  padding: 4px 7px;
   border-radius: var(--radius-sm);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
   outline: none;
   cursor: pointer;
@@ -841,18 +866,16 @@ body {
 .checkbox-row-container {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  border-top: 1px solid var(--border-subtle);
-  padding-top: 8px;
+  gap: 5px;
 }
 
 .checkbox-row {
   display: flex;
   align-items: flex-start;
-  gap: 9px;
+  gap: 8px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid transparent;
-  padding: 6px 10px;
+  padding: 5px 8px;
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: var(--trans-fast);
@@ -869,10 +892,11 @@ body {
 
 .checkbox-row input[type="checkbox"] {
   accent-color: var(--accent-cyan);
-  width: 15px;
-  height: 15px;
-  margin-top: 2px;
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .check-text {
@@ -882,43 +906,45 @@ body {
 }
 
 .check-text strong {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-main);
+  line-height: 1.2;
 }
 
 .check-text small {
-  font-size: 0.67rem;
+  font-size: 0.63rem;
   color: var(--text-dim);
-  line-height: 1.25;
+  line-height: 1.15;
 }
 
-/* Panda Mouse Pro Banner */
-.panda-card {
+/* Panda Mouse Pro Banner Compact */
+.panda-card-compact {
+  margin-top: auto;
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .panda-left {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .panda-badge {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 800;
   color: #38bdf8;
 }
 
 .panda-desc {
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   color: var(--text-muted);
 }
 
@@ -926,19 +952,19 @@ body {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #fff;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-radius: var(--radius-md);
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 3px 12px rgba(16, 185, 129, 0.3);
   transition: var(--trans-smooth);
 }
 
 .btn-panda:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+  box-shadow: 0 5px 16px rgba(16, 185, 129, 0.45);
 }
 
 /* ==========================================================================

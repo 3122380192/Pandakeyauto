@@ -90,11 +90,12 @@ const scrcpyPath = path.join(binDir, 'scrcpy.exe');
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 780,
-    height: 680,
-    minWidth: 680,
-    minHeight: 580,
-    backgroundColor: '#0b0f19',
+    width: 880,
+    height: 740,
+    minWidth: 780,
+    minHeight: 620,
+    backgroundColor: '#080a11',
+    autoHideMenuBar: true,
     frame: true,
     titleBarStyle: 'default',
     icon: path.join(binDir, 'icon.png'),
@@ -105,6 +106,7 @@ function createWindow() {
     }
   });
 
+  mainWindow.removeMenu();
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
   mainWindow.on('closed', () => {
