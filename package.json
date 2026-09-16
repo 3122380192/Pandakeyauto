@@ -1,18 +1,82 @@
 {
   "name": "Pandakeyauto",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "description": "Pandakeyauto Pro VIP - Dieu khien dien thoai Android & iPhone bang chuot va ban phim PC",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "start:silent": "wscript \"Khởi Động Pandakeyauto.vbs\"",
+    "build:exe": "electron-builder --win",
+    "build:portable": "electron-builder --win portable",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "android",
+    "scrcpy",
+    "keymapping",
+    "remote",
+    "game"
+  ],
+  "author": "3122380192",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "electron": "^44.4.0"
+    "electron": "^44.4.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.pandakeyauto.pro",
+    "productName": "Pandakeyauto Pro",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!dist/*",
+      "!.git/*",
+      "!.app_data/*",
+      "!Recordings/*",
+      "!*.log",
+      "!temp_*",
+      "!screenshot_*"
+    ],
+    "extraResources": [
+      {
+        "from": "bin",
+        "to": "bin",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "bin/icon.png"
+    },
+    "portable": {
+      "artifactName": "Pandakeyauto-Pro-Portable.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Pandakeyauto Pro",
+      "artifactName": "Pandakeyauto-Pro-Setup.exe"
+    }
   }
 }

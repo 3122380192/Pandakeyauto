@@ -1,0 +1,68 @@
+name: Build and Release Windows EXE
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Windows Executable
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Windows EXE (Portable & Setup)
+        run: npx electron-builder --win --x64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pandakeyauto-Pro-Windows-EXE
+          path: dist/*.exe
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
+        with:
+          tag_name: ${{ github.ref_name == 'master' && 'v2.0.0' || github.ref_name }}
+          name: "Pandakeyauto Pro v2.0 - Windows EXE"
+          body: |
+            ## 🎮 Pandakeyauto Pro VIP v2.0 - Tải File EXE Cho Máy Đích
+
+            ### 🚀 Danh sách file tải về:
+            * **`Pandakeyauto-Pro-Portable.exe`**: Bản chạy ngay (Portable), không cần cài đặt, cắm USB hoặc tải về nhấp đúp là chơi ngay.
+            * **`Pandakeyauto-Pro-Setup.exe`**: Bản cài đặt Windows (Installer), tự động tạo icon trên Desktop.
+            * **`Pandakeyauto.exe`**: Launcher 1 chạm siêu nhẹ có sẵn trong repository.
+
+            ### ✨ Tính năng mới:
+            * 3 Sub-tabs thông minh trong cửa sổ Chiến Game (Thông số, Chế độ, VIP Combat).
+            * Bộ Ghìm Tâm Tự Động (Recoil Control System) kèm phím nóng F6.
+            * Kéo giãn màn hình tỉ lệ iPad 4:3.
+            * Auto Farm Macro Recorder.
+            * Phím UHID chống chặn chuột Vivo / Xiaomi HyperOS / Android 14+.
+          files: dist/*.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

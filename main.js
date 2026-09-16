@@ -6,7 +6,9 @@ const fs = require('fs');
 const ProfileManager = require('./profileManager');
 const githubSync = require('./githubSync');
 
-const customUserDataPath = path.join(__dirname, '.app_data');
+const customUserDataPath = app.isPackaged
+  ? path.join(app.getPath('userData'), '.app_data')
+  : path.join(__dirname, '.app_data');
 if (!fs.existsSync(customUserDataPath)) {
   try { fs.mkdirSync(customUserDataPath, { recursive: true }); } catch (e) {}
 }
@@ -97,7 +99,11 @@ let currentOptions = {
   deviceId: null
 };
 
-const binDir = path.join(__dirname, 'bin');
+const binDir = app.isPackaged
+  ? (fs.existsSync(path.join(process.resourcesPath, 'bin'))
+      ? path.join(process.resourcesPath, 'bin')
+      : path.join(__dirname, 'bin'))
+  : path.join(__dirname, 'bin');
 const adbPath = path.join(binDir, 'adb.exe');
 const scrcpyPath = path.join(binDir, 'scrcpy.exe');
 
@@ -884,11 +890,15 @@ ipcMain.handle('connect-wifi', async (event, { deviceId, ipAddress }) => {
 ipcMain.handle('take-screenshot', async (event, { deviceId }) => {
   const target = deviceId ? `-s "${deviceId}"` : '';
   const now = Date.now();
-  const pcPath = path.join(__dirname, `screenshot_${now}.png`);
+  const screenshotDir = app.isPackaged ? path.join(app.getPath('pictures'), 'PandakeyScreenshots') : __dirname;
+  if (!fs.existsSync(screenshotDir)) {
+    try { fs.mkdirSync(screenshotDir, { recursive: true }); } catch (e) {}
+  }
+  const pcPath = path.join(screenshotDir, `screenshot_${now}.png`);
   return new Promise((resolve) => {
     exec(`"${adbPath}" ${target} shell screencap -p /sdcard/temp_screen.png && "${adbPath}" ${target} pull /sdcard/temp_screen.png "${pcPath}" && "${adbPath}" ${target} shell rm /sdcard/temp_screen.png`, { windowsHide: true }, (err) => {
       if (err) return resolve({ success: false, message: 'Lỗi chụp màn hình: ' + err.message });
-      resolve({ success: true, message: `Đã lưu ảnh màn hình vào: screenshot_${now}.png` });
+      resolve({ success: true, message: `Đã lưu ảnh màn hình vào: ${pcPath}` });
     });
   });
 });
@@ -1310,11 +1320,16 @@ ipcMain.handle('toggle-show-touches', async (event, { enabled, deviceId } = {}) 
   });
 });
 
-ipcMain.handle('open-recordings-folder', async () => {
-  const recDir = path.join(__dirname, 'Recordings');
+function getRecordingsDir() {
+  const recDir = app.isPackaged ? path.join(app.getPath('videos'), 'PandakeyRecordings') : path.join(__dirname, 'Recordings');
   if (!fs.existsSync(recDir)) {
     try { fs.mkdirSync(recDir, { recursive: true }); } catch (e) {}
   }
+  return recDir;
+}
+
+ipcMain.handle('open-recordings-folder', async () => {
+  const recDir = getRecordingsDir();
   shell.openPath(recDir);
   return { success: true };
 });
@@ -1466,10 +1481,7 @@ ipcMain.handle('start-control', async (event, options = {}) => {
 
     // 12. Ghi hình trận đấu trực tiếp qua GPU máy tính (0% lag điện thoại)
     if (recordGameplay) {
-      const recDir = path.join(__dirname, 'Recordings');
-      if (!fs.existsSync(recDir)) {
-        try { fs.mkdirSync(recDir, { recursive: true }); } catch (e) {}
-      }
+      const recDir = getRecordingsDir();
       const recFileName = `Gameplay_${new Date().toISOString().replace(/[:.]/g, '-')}.mp4`;
       const recPath = path.join(recDir, recFileName);
       args.push(`--record=${recPath}`);

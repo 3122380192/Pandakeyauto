@@ -5,3 +5,5 @@ screenshot_*.png
 temp_screen.png
 scrcpy.zip
 temp_scrcpy/
+dist/
+Recordings/

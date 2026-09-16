@@ -4,7 +4,17 @@
 
 ---
 
-## ⚡ CHẠY TỪ XA 1 CHẠM (KHÔNG CẦN TẢI FILE THỦ CÔNG)
+## 📦 TẢI FILE .EXE TRỰC TIẾP TỪ GITHUB (DÀNH CHO MÁY ĐÍCH)
+
+### 1. Tải Bản Portable .EXE Từ GitHub Releases (Khuyên Dùng Nhất)
+👉 **[Tải file .EXE tại mục GitHub Releases](https://github.com/3122380192/Pandakeyauto/releases)**
+* **`Pandakeyauto-Pro-Portable.exe`**: Bản chạy ngay độc lập, không cần cài đặt, không cần Node.js hay quyền Admin, copy vào USB mang đi mọi máy.
+* **`Pandakeyauto-Pro-Setup.exe`**: Trình cài đặt chuẩn Windows, tự động tạo lối tắt trên Desktop & Start Menu.
+
+### 2. File Launcher Nhẹ `Pandakeyauto.exe` Sẵn Trong Repo
+👉 Tải trực tiếp file [**`Pandakeyauto.exe`**](https://github.com/3122380192/Pandakeyauto/raw/master/Pandakeyauto.exe) từ trang chủ GitHub, nhấp đúp là tự động kết nối và mở app.
+
+---
 
 Bạn đang ở quán net, máy tính lạ, hoặc không muốn tải giải nén thủ công? Chỉ cần mở **PowerShell** (hoặc nhấn `Win + R` > gõ `powershell`) và dán dòng lệnh duy nhất này:
 
