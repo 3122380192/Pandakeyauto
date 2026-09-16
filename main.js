@@ -152,46 +152,9 @@ function createWindow() {
     });
   } catch (e) {}
 
-  // 2. Phím tắt chuyển đổi chuột 2 chiều: Alt+3 và F1 (1 phím duy nhất cực nhanh cho game thủ)
-  try {
-    globalShortcut.register('Alt+3', () => {
-      try { switchMouseFocus(); } catch (e) {}
-    });
-  } catch (e) {}
-
-  try {
-    globalShortcut.register('F1', () => {
-      try { switchMouseFocus(); } catch (e) {}
-    });
-  } catch (e) {}
-
-  // 3. Phím tắt Boss Key (Alt+X): Tắt đèn màn hình (không khóa máy) & Ẩn cửa sổ PC
-  try {
-    globalShortcut.register('Alt+X', () => {
-      try { toggleBossKeyHide(); } catch (e) {}
-    });
-  } catch (e) {}
-
-  // 4. Phím tắt Khóa Màn Hình Nhanh (Alt+Z)
-  try {
-    globalShortcut.register('Alt+Z', () => {
-      try { quickLockScreen(); } catch (e) {}
-    });
-  } catch (e) {}
-
-  // 5. Phím tắt Chuyển Chế Độ Chơi Sang Phải (Next Mode): Alt + Right
-  try {
-    globalShortcut.register('Alt+Right', () => {
-      try { handleNextModeShortcut(); } catch (e) {}
-    });
-  } catch (e) {}
-
-  // 6. Phím tắt Chuyển Chế Độ Chơi Sang Trái (Prev Mode): Alt + Left
-  try {
-    globalShortcut.register('Alt+Left', () => {
-      try { handlePrevModeShortcut(); } catch (e) {}
-    });
-  } catch (e) {}
+  // ⭐ Phím tắt chuyển đổi chuột/bàn phím (Alt) được xử lý độc quyền và an toàn
+  // thông qua switch_mouse.exe --watch (Low-Level Hook) để đảm bảo cô lập 100% khi ở trong điện thoại,
+  // tuyệt đối không dùng RegisterHotKey để tránh cướp phím khi chơi game trên điện thoại.
 }
 
 // ================= FLOATING GAMING HUD (OSD NOTIFICATION) =================
@@ -486,7 +449,7 @@ function toggleBossKeyHide() {
   }
 }
 
-// XỬ LÝ PHÍM ĐỔI CHUỘT (Alt, F1, Alt+3): Chuyển đổi chuột 2 chiều siêu tốc 0ms lag
+// XỬ LÝ PHÍM ĐỔI CHUỘT (Alt): Chuyển đổi chuột 2 chiều siêu tốc 0ms lag
 let mouseWatcherProcess = null;
 
 function handleMouseSwitchOutput(out) {
@@ -494,29 +457,29 @@ function handleMouseSwitchOutput(out) {
     showOsdNotification({
       icon: '🖱️',
       game: 'ĐỔI CHUỘT',
-      badge: 'Alt / F1',
+      badge: 'Phím Alt',
       mode: 'Đã nhả chuột về Máy Tính',
-      specs: 'Di chuyển chuột tự do trên PC'
+      specs: 'Toàn bộ phím & chuột đã về máy tính'
     });
-    sendLog('🔄 [Đổi chuột Alt/F1] Đã nhả chuột về MÁY TÍNH thành công!');
+    sendLog('🔄 [Đổi chuột] Đã nhả chuột & bàn phím về MÁY TÍNH thành công!');
   } else if (out.includes('CAPTURED_TO_PHONE')) {
     showOsdNotification({
       icon: '🎮',
       game: 'ĐỔI CHUỘT',
-      badge: 'Alt / F1',
-      mode: 'Đã đưa chuột vào Game Điện Thoại',
-      specs: 'Tương tác trực tiếp trên màn hình game'
+      badge: 'Phím Alt',
+      mode: 'Đã khóa chuột & phím vào Điện Thoại',
+      specs: 'Cô lập 100% không ảnh hưởng máy tính. Nhấn Alt để thoát'
     });
-    sendLog('🎮 [Đổi chuột Alt/F1] Đã đưa chuột sang ĐIỆN THOẠI thành công!');
+    sendLog('🎮 [Đổi chuột] Đã khóa chuột & phím vào ĐIỆN THOẠI! (Cô lập 100%, nhấn Alt để quay về PC)');
   } else if (out.includes('SCRCPY_NOT_RUNNING')) {
     showOsdNotification({
       icon: '⚠️',
-      game: 'CHƯA CHIẾU MÀN HÌNH',
-      badge: 'Alt / F1',
-      mode: 'Màn hình điện thoại chưa bật',
-      specs: 'Bấm Bắt đầu chiếu màn hình trước'
+      game: 'CHƯA KÍCH HOẠT',
+      badge: 'Phím Alt',
+      mode: 'Phiên điều khiển chưa bật',
+      specs: 'Bấm Bắt đầu điều khiển trước'
     });
-    sendLog('⚠️ [Đổi chuột] Chưa có phiên chiếu màn hình nào đang chạy. Vui lòng bấm "▶ BẮT ĐẦU CHIẾU MÀN HÌNH"!');
+    sendLog('⚠️ [Đổi chuột] Chưa có phiên điều khiển nào đang chạy. Vui lòng bấm "▶ BẮT ĐẦU ĐIỀU KHIỂN"!');
   }
 }
 
@@ -1143,12 +1106,12 @@ ipcMain.handle('start-control', async (event, options = {}) => {
       game: 'KÍCH HOẠT THÀNH CÔNG',
       badge: `${fps || 120} FPS`,
       mode: modeName,
-      specs: 'Alt / F1: Đổi chuột • Alt+Right/Left: Chế độ • Alt+Z: Khóa ĐT'
+      specs: 'Phím Alt: Đổi chuột PC <> ĐT • Giữ 100% cô lập máy tính'
     });
 
     return {
       success: true,
-      message: `Đã kích hoạt [${modeName}]! Bấm Alt / F1 đổi chuột siêu tốc, Alt+Right/Left đổi chế độ.`
+      message: `Đã kích hoạt [${modeName}]! Nhấn phím Alt để đổi chuột sang điện thoại (cô lập hoàn toàn với máy tính).`
     };
   } catch (error) {
     return { success: false, message: error.message };

@@ -232,10 +232,10 @@ function setControllingState(active) {
         ? `ĐANG CHIẾU [${activeProfile ? activeProfile.name : 'GAME'}] (BẤM ĐỂ NẠP LẠI)`
         : `ĐANG BẬT [TAB BẢNG ĐEN] (BẤM ĐỂ NẠP LẠI)`;
     }
-    if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Phím: Alt / F1 (Đổi chuột) | Alt+Right/Left (Đổi chế độ) | Alt+X (Boss Key)';
+    if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Phím tắt: Nhấn Alt để chuyển đổi Chuột & Bàn phím (Máy tính <> Điện thoại)';
     updateFooterLog(isMirror
-      ? '🎮 ĐANG ĐIỀU KHIỂN & CHIẾU MÀN HÌNH! Nhấn Alt hoặc F1 để chuyển đổi chuột giữa ĐT & PC.'
-      : '⬛ ĐANG BẬT TAB BẢNG ĐEN (TỐI ƯU TỐC ĐỘ CHUỘT NHẤT)! Nhấn Alt để chuyển đổi chuột.');
+      ? '🎮 ĐANG ĐIỀU KHIỂN & CHIẾU MÀN HÌNH! Nhấn Alt để chuyển đổi chuột & phím (cô lập với PC).'
+      : '⬛ ĐANG BẬT TAB BẢNG ĐEN (TỐI ƯU TỐC ĐỘ CHUỘT NHẤT)! Nhấn Alt để chuyển đổi chuột & phím.');
   } else {
     if (elBtnStartMirror) elBtnStartMirror.classList.remove('running');
     updateModeCardVisuals();
@@ -399,7 +399,7 @@ function updateModeCardVisuals() {
   if (!isControlling) {
     if (isMirror) {
       if (elBtnMirrorTitle) elBtnMirrorTitle.textContent = 'BẮT ĐẦU CHIẾU MÀN HÌNH';
-      if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Chiếu lên PC & Tương tác chuột phím (Phím: Alt / F1 đổi chuột)';
+      if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Chiếu lên PC & Tương tác chuột phím (Phím tắt: Nhấn Alt đổi chuột)';
     } else {
       if (elBtnMirrorTitle) elBtnMirrorTitle.textContent = 'BẮT ĐẦU ĐIỀU KHIỂN (TAB BẢNG ĐEN)';
       if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Mở tab bắt chuột tối ưu tốc độ • Bấm Alt đổi chuột tức thì 0ms';
