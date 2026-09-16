@@ -569,7 +569,11 @@ function updateModeDisplay() {
   if (activeMode.renderDriver) elSelRenderDriver.value = activeMode.renderDriver;
   if (elSelMouseSpeed && activeMode.mouseSpeed) elSelMouseSpeed.value = String(activeMode.mouseSpeed);
 
-  if (activeMode.mirrorScreen !== undefined) elChkMirrorScreen.checked = activeMode.mirrorScreen;
+  if (activeMode.mirrorScreen !== undefined) {
+    if (elRadModeMirror) elRadModeMirror.checked = !!activeMode.mirrorScreen;
+    if (elRadModeBlackTab) elRadModeBlackTab.checked = !activeMode.mirrorScreen;
+    if (typeof updateModeCardVisuals === 'function') updateModeCardVisuals();
+  }
   if (elChkEnableControl && activeMode.enableControl !== undefined) elChkEnableControl.checked = !!activeMode.enableControl;
   if (elChkUhidInput && activeMode.uhidInput !== undefined) elChkUhidInput.checked = activeMode.uhidInput !== false;
   if (elChkTurnScreenOff && activeMode.turnScreenOff !== undefined) elChkTurnScreenOff.checked = !!activeMode.turnScreenOff;
@@ -613,7 +617,7 @@ function handleTuningChange() {
     bitrate: elSelBitrate.value,
     renderDriver: elSelRenderDriver.value,
     mouseSpeed: elSelMouseSpeed ? elSelMouseSpeed.value : '0.4',
-    mirrorScreen: elChkMirrorScreen.checked,
+    mirrorScreen: elRadModeMirror ? elRadModeMirror.checked : false,
     enableControl: elChkEnableControl ? elChkEnableControl.checked : true,
     uhidInput: elChkUhidInput ? elChkUhidInput.checked : true,
     turnScreenOff: elChkTurnScreenOff ? elChkTurnScreenOff.checked : false,
@@ -627,7 +631,7 @@ function handleTuningChange() {
   updateFooterLog(`Đã cập nhật thông số cho chế độ: ${activeMode.name}`);
 }
 
-[elSelCodec, elSelFps, elSelDisplayBuffer, elSelMaxSize, elSelBitrate, elSelRenderDriver, elSelMouseSpeed, elChkMirrorScreen, elChkEnableControl, elChkUhidInput, elChkTurnScreenOff, elChkForwardAudio, elChkStayAwake].filter(Boolean).forEach(input => {
+[elSelCodec, elSelFps, elSelDisplayBuffer, elSelMaxSize, elSelBitrate, elSelRenderDriver, elSelMouseSpeed, elRadModeMirror, elRadModeBlackTab, elChkEnableControl, elChkUhidInput, elChkTurnScreenOff, elChkForwardAudio, elChkStayAwake].filter(Boolean).forEach(input => {
   input.addEventListener('change', () => {
     handleTuningChange();
     if (isControlling) {
@@ -639,11 +643,13 @@ function handleTuningChange() {
 
 // ================= GITHUB CLOUD SYNC =================
 async function initGithubConfig() {
-  const conf = await window.api.getGithubConfig();
-  if (conf) {
-    if (conf.token) elTxtGithubToken.value = conf.token;
-    if (conf.gistId) elTxtGithubGistId.value = conf.gistId;
-  }
+  try {
+    const conf = await window.api.getGithubConfig();
+    if (conf) {
+      if (conf.token) elTxtGithubToken.value = conf.token;
+      if (conf.gistId) elTxtGithubGistId.value = conf.gistId;
+    }
+  } catch (e) {}
 }
 
 elBtnToggleTokenVisibility.addEventListener('click', () => {
