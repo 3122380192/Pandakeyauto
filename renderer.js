@@ -82,17 +82,35 @@ tabButtons.forEach(btn => {
 });
 
 // Sub-Tabs trong Tab 1 (Chiến Game)
-const subTabButtons = document.querySelectorAll('.sub-tab-btn');
-const subTabPanes = document.querySelectorAll('.sub-tab-pane');
+window.switchSubTab = function(targetId) {
+  if (!targetId) return;
+  const subBtns = document.querySelectorAll('.sub-tab-btn');
+  const subPanes = document.querySelectorAll('.sub-tab-pane');
+  subBtns.forEach(b => {
+    if (b.getAttribute('data-subtab') === targetId) b.classList.add('active');
+    else b.classList.remove('active');
+  });
+  subPanes.forEach(p => {
+    if (p.id === targetId) p.classList.add('active');
+    else p.classList.remove('active');
+  });
+  playSoundCue('mode');
+  const tabNames = {
+    'subtabTuning': '⚙️ 1. Thông Số & Chuột',
+    'subtabControls': '🛡️ 2. Chế Độ & Tính Năng',
+    'subtabCombatVip': '🎯 3. Chiến Thuật VIP (Ghìm Tâm, iPad 4:3, Macro)'
+  };
+  updateFooterLog(`Đã chuyển tab: ${tabNames[targetId] || targetId}`);
+};
 
+const subTabButtons = document.querySelectorAll('.sub-tab-btn');
 subTabButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    subTabButtons.forEach(b => b.classList.remove('active'));
-    subTabPanes.forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
     const targetId = btn.getAttribute('data-subtab');
-    const targetPane = document.getElementById(targetId);
-    if (targetPane) targetPane.classList.add('active');
+    if (targetId && window.switchSubTab) {
+      window.switchSubTab(targetId);
+    }
   });
 });
 
@@ -1091,6 +1109,7 @@ function updateRecoilUI() {
 async function handleToggleRecoil(forceState) {
   isRecoilActive = forceState !== undefined ? forceState : !isRecoilActive;
   updateRecoilUI();
+  playSoundCue('activate');
   const pullY = parseInt(elRngRecoilY ? elRngRecoilY.value : 4) || 4;
   const jitterX = parseInt(elRngRecoilJitter ? elRngRecoilJitter.value : 1) || 1;
   const delayMs = parseInt(elRngRecoilDelay ? elRngRecoilDelay.value : 120) || 120;
@@ -1102,8 +1121,25 @@ if (elBtnToggleRecoil) {
   elBtnToggleRecoil.addEventListener('click', () => handleToggleRecoil());
 }
 
+if (elLblRecoilState) {
+  elLblRecoilState.style.cursor = 'pointer';
+  elLblRecoilState.addEventListener('click', () => handleToggleRecoil());
+}
+
 if (elBtnToggleRecoilQuick) {
   elBtnToggleRecoilQuick.addEventListener('click', () => handleToggleRecoil());
+}
+
+if (elLblRecoilStateQuick) {
+  elLblRecoilStateQuick.style.cursor = 'pointer';
+  elLblRecoilStateQuick.addEventListener('click', () => handleToggleRecoil());
+}
+
+if (window.api && window.api.onRecoilToggled) {
+  window.api.onRecoilToggled((active) => {
+    isRecoilActive = !!active;
+    updateRecoilUI();
+  });
 }
 
 if (elRngRecoilY) {
@@ -1172,6 +1208,13 @@ if (elBtnToggleIpadSwitch) {
   });
 }
 
+if (elLblIpadState) {
+  elLblIpadState.style.cursor = 'pointer';
+  elLblIpadState.addEventListener('click', () => {
+    if (elBtnToggleIpadSwitch) elBtnToggleIpadSwitch.click();
+  });
+}
+
 if (elSelIpadPreset) {
   elSelIpadPreset.addEventListener('change', () => {
     if (elSelIpadPreset.value === 'custom') {
@@ -1198,12 +1241,17 @@ if (elBtnApplyIpadView) {
     updateFooterLog(`Đang chỉnh màn hình sang tỉ lệ iPad ${width}×${height}...`);
     const res = await window.api.setIpadView({ width, height, density, deviceId: currentDeviceId });
     updateFooterLog(res.message);
-    if (elIpadViewStatus) {
-      elIpadViewStatus.textContent = `iPad (${width}×${height})`;
-      elIpadViewStatus.classList.add('active');
+    if (res.success) {
+      if (elIpadViewStatus) {
+        elIpadViewStatus.textContent = `iPad (${width}×${height})`;
+        elIpadViewStatus.classList.add('active');
+      }
+      updateIpadSwitchUI(true);
+      playSoundCue('activate');
+    } else {
+      updateIpadSwitchUI(false);
+      updateFooterLog('⚠️ Không thể chỉnh màn hình: Vui lòng kết nối cáp USB với điện thoại!');
     }
-    updateIpadSwitchUI(true);
-    alert(res.message);
   });
 }
 
@@ -1217,7 +1265,6 @@ if (elBtnResetIpadView) {
       elIpadViewStatus.classList.remove('active');
     }
     updateIpadSwitchUI(false);
-    alert(res.message);
   });
 }
 

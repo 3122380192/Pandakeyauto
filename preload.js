@@ -78,5 +78,6 @@ contextBridge.exposeInMainWorld('api', {
   // Core Events
   onRequestStartControl: (callback) => ipcRenderer.on('request-start-control', () => callback()),
   onOtgLog: (callback) => ipcRenderer.on('otg-log', (_event, value) => callback(value)),
-  onOtgStatus: (callback) => ipcRenderer.on('otg-status', (_event, value) => callback(value))
+  onOtgStatus: (callback) => ipcRenderer.on('otg-status', (_event, value) => callback(value)),
+  onRecoilToggled: (callback) => ipcRenderer.on('recoil-toggled-global', (_event, value) => callback(value))
 });

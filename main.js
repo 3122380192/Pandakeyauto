@@ -159,6 +159,13 @@ function createWindow() {
     });
   } catch (e) {}
 
+  // 2. Phím tắt F6 toàn cục Bật/Tắt Ghìm Tâm VIP (hoạt động ngay cả khi đang trong game Scrcpy)
+  try {
+    globalShortcut.register('F6', () => {
+      try { toggleRecoilGlobal(); } catch (e) {}
+    });
+  } catch (e) {}
+
   // ⭐ Phím tắt chuyển đổi chuột/bàn phím (Alt) được xử lý độc quyền và an toàn
   // thông qua switch_mouse.exe --watch (Low-Level Hook) để đảm bảo cô lập 100% khi ở trong điện thoại,
   // tuyệt đối không dùng RegisterHotKey để tránh cướp phím khi chơi game trên điện thoại.
@@ -987,8 +994,8 @@ function stopRecoilWorker() {
   }
 }
 
-ipcMain.handle('toggle-recoil', async (event, { enabled, pullY, jitterX, delayMs, intervalMs }) => {
-  recoilConfig.enabled = !!enabled;
+function toggleRecoilGlobal(forceState, pullY, jitterX, delayMs, intervalMs) {
+  recoilConfig.enabled = forceState !== undefined ? !!forceState : !recoilConfig.enabled;
   if (pullY !== undefined) recoilConfig.pullY = pullY;
   if (jitterX !== undefined) recoilConfig.jitterX = jitterX;
   if (delayMs !== undefined) recoilConfig.delayMs = delayMs;
@@ -1000,21 +1007,27 @@ ipcMain.handle('toggle-recoil', async (event, { enabled, pullY, jitterX, delayMs
       icon: '🔫',
       game: 'RECOIL CONTROL VIP',
       badge: 'BẬT (F6)',
-      mode: `Kéo Trục Y: ${recoilConfig.pullY}px • Jitter: ±${recoilConfig.jitterX}px`,
-      specs: `Độ trễ bắt đầu: ${recoilConfig.delayMs}ms • Chu kỳ: ${recoilConfig.intervalMs}ms`
+      mode: `Kéo Trục Y: ${recoilConfig.pullY}px • Rung: ±${recoilConfig.jitterX}px`,
+      specs: `Độ trễ bắt đầu: ${recoilConfig.delayMs}ms • Tự động ghìm khi sấy đạn`
     });
-    return { success: true, enabled: true, config: recoilConfig, message: 'Đã bật Ghìm Tâm Tự Động (Recoil Control)!' };
+    sendLog(`🎯 [Ghìm Tâm VIP] Đã BẬT ghìm tâm (F6) • Trục Y: ${recoilConfig.pullY}px`);
   } else {
     stopRecoilWorker();
     showOsdNotification({
       icon: '⚪',
       game: 'RECOIL CONTROL',
-      badge: 'ĐÃ TẮT',
-      mode: 'Bắn súng chế độ bình thường',
+      badge: 'ĐÃ TẮT (F6)',
+      mode: 'Bắn súng bình thường',
       specs: 'Đã tắt tự động ghìm tâm'
     });
-    return { success: true, enabled: false, message: 'Đã tắt Ghìm Tâm Tự Động.' };
+    sendLog('⚪ [Ghìm Tâm VIP] Đã TẮT ghìm tâm (F6)');
   }
+  sendSafe('recoil-toggled-global', recoilConfig.enabled);
+  return { success: true, enabled: recoilConfig.enabled, config: recoilConfig, message: recoilConfig.enabled ? 'Đã bật Ghìm Tâm Tự Động (F6)!' : 'Đã tắt Ghìm Tâm Tự Động.' };
+}
+
+ipcMain.handle('toggle-recoil', async (event, { enabled, pullY, jitterX, delayMs, intervalMs } = {}) => {
+  return toggleRecoilGlobal(enabled, pullY, jitterX, delayMs, intervalMs);
 });
 
 ipcMain.handle('update-recoil-config', async (event, config = {}) => {

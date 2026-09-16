@@ -827,6 +827,10 @@ body {
   user-select: none;
 }
 
+.sub-tab-btn * {
+  pointer-events: none;
+}
+
 .sub-tab-btn:hover {
   background: rgba(255, 255, 255, 0.09);
   color: #fff;
