@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('api', {
   openUrlOnPhone: (payload) => ipcRenderer.invoke('open-url-on-phone', payload),
   startControl: (options) => ipcRenderer.invoke('start-control', options),
   stopControl: () => ipcRenderer.invoke('stop-control'),
+  setMouseSpeed: (speed) => ipcRenderer.invoke('set-mouse-speed', speed),
   sendKeyEvent: (payload) => ipcRenderer.invoke('send-keyevent', payload),
 
   // Profile & Game Mode APIs

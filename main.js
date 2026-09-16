@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, globalShortcut, screen } = require('electron');
 const path = require('path');
+const os = require('os');
 const { spawn, exec, execFile, execSync } = require('child_process');
 const fs = require('fs');
 const ProfileManager = require('./profileManager');
@@ -81,6 +82,8 @@ let currentOptions = {
   mirrorScreen: true,
   enableControl: true,
   uhidInput: true,
+  mouseMode: 'sdk',
+  tabStyle: 'pip',
   stayAwake: true,
   turnScreenOff: false,
   forwardAudio: true,
@@ -92,7 +95,7 @@ let currentOptions = {
   videoBuffer: 0,
   audioBuffer: 10,
   renderDriver: 'direct3d11',
-  mouseSpeed: '0.4',
+  mouseSpeed: '0.35',
   deviceId: null
 };
 
@@ -961,6 +964,17 @@ ipcMain.handle('restart-adb', async () => {
   });
 });
 
+ipcMain.handle('set-mouse-speed', async (event, speed) => {
+  currentOptions.mouseSpeed = speed;
+  try {
+    const speedFile = path.join(os.tmpdir(), 'pandakey_mouse_speed.txt');
+    fs.writeFileSync(speedFile, (speed || '0.35').toString());
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+});
+
 // ================= KHỞI CHẠY SCRCPY VỚI TỐI ƯU HÓA HÌNH ẢNH & ĐỘ TRỄ =================
 ipcMain.handle('start-control', async (event, options = {}) => {
   if (controlProcess) {
@@ -970,9 +984,11 @@ ipcMain.handle('start-control', async (event, options = {}) => {
   currentOptions = { ...currentOptions, ...options };
   const {
     deviceId,
-    mirrorScreen,
+    mirrorScreen = true,
     enableControl = true,
     uhidInput = true,
+    mouseMode = 'sdk', // 'sdk' (đồng bộ 1:1 mượt như PC) hoặc 'uhid' (chuột game hãm tốc)
+    tabStyle = 'pip',  // 'pip' (Mini PIP gọn gàng), 'normal' (chuẩn), 'hidden' (ẩn 100%)
     stayAwake,
     turnScreenOff,
     forwardAudio,
@@ -984,8 +1000,14 @@ ipcMain.handle('start-control', async (event, options = {}) => {
     videoBuffer,
     audioBuffer,
     renderDriver,
-    mouseSpeed = '0.4'
+    mouseSpeed = '0.35'
   } = currentOptions;
+
+  // Ghi tức thì cấu hình tốc độ chuột để switch_mouse.exe áp dụng hãm tốc độ phần cứng
+  try {
+    const speedFile = path.join(os.tmpdir(), 'pandakey_mouse_speed.txt');
+    fs.writeFileSync(speedFile, (mouseSpeed || '0.35').toString());
+  } catch (e) {}
 
   const effectiveBuffer = (videoBuffer !== undefined && videoBuffer !== null) ? videoBuffer : (displayBuffer !== undefined && displayBuffer !== null ? displayBuffer : 0);
   const args = [];
@@ -1012,14 +1034,23 @@ ipcMain.handle('start-control', async (event, options = {}) => {
     args.push('-s', targetDeviceId);
   }
 
-  if (mirrorScreen) {
+  const isVideoEnabled = mirrorScreen && tabStyle !== 'hidden';
+
+  if (isVideoEnabled) {
     // 1. Kiểm soát quyền điều khiển điện thoại từ máy tính
     if (!enableControl) {
       args.push('--no-control');
     } else {
-      // Dùng UHID Hardware Input để khắc phục triệt để lỗi Vivo/Xiaomi/Oppo chặn chuột & bàn phím
-      if (uhidInput) {
-        args.push('--keyboard=uhid');
+      // Bàn phím dùng UHID để Vivo/Xiaomi không bị chặn gõ phím & WASD
+      args.push('--keyboard=uhid');
+
+      // Chế độ chuột:
+      if (mouseMode === 'sdk') {
+        // ⭐ ĐỒNG BỘ 100% TỐC ĐỘ CHUỘT PC (SDK Mode):
+        // Toạ độ tuyệt đối, chuột trên ĐT di chuyển 1:1 chuẩn xác từng milimet y hệt PC
+        args.push('--mouse=sdk');
+      } else {
+        // Chế độ chuột phần cứng UHID (có tự động hãm DPI chuột Windows)
         args.push('--mouse=uhid');
       }
     }
@@ -1059,9 +1090,17 @@ ipcMain.handle('start-control', async (event, options = {}) => {
       args.push('--no-audio');
     }
 
-    // 9. Tùy chọn cửa sổ
-    args.push('--window-title=APKRemote - Màn Hình Điện Thoại (F1/Alt+3: Doi Chuot | Alt+X: An Nhanh | Alt+Z: Khoa May | Alt+Left/Right: Che Do)');
-    args.push('--always-on-top');
+    // 9. Tùy chọn kiểu cửa sổ hiển thị
+    if (tabStyle === 'pip') {
+      // ⭐ TAB MINI PIP: Cực kỳ gọn gàng góc màn hình, không choán chỗ, chuột đồng bộ 100% cực êm
+      args.push('--window-title=APKRemote - Tab Điện Thoại (Alt/F1: Đổi Chuột)');
+      args.push('--always-on-top');
+      args.push('--window-width=380', '--window-height=760');
+    } else {
+      // Cửa sổ chuẩn
+      args.push('--window-title=APKRemote - Màn Hình Điện Thoại (Alt/F1: Đổi Chuột | Alt+X: Ẩn Nhanh | Alt+Z: Khóa Máy)');
+      args.push('--always-on-top');
+    }
 
     // 10. Tắt màn hình thật của điện thoại khi chiếu lên PC (nếu người dùng tích chọn checkbox)
     if (turnScreenOff) {
@@ -1085,7 +1124,7 @@ ipcMain.handle('start-control', async (event, options = {}) => {
   }
 
   try {
-    const mouseScale = (mouseSpeed !== undefined && mouseSpeed !== null) ? mouseSpeed.toString() : '0.4';
+    const mouseScale = (mouseSpeed !== undefined && mouseSpeed !== null) ? mouseSpeed.toString() : '0.35';
     controlProcess = spawn(scrcpyPath, args, {
       cwd: binDir,
       windowsHide: true,
@@ -1111,12 +1150,16 @@ ipcMain.handle('start-control', async (event, options = {}) => {
 
     controlProcess.on('close', (code) => {
       controlProcess = null;
+      // Khôi phục ngay lập tức tốc độ chuột PC gốc
+      try {
+        execFile(path.join(binDir, 'switch_mouse.exe'), ['--restore'], { windowsHide: true });
+      } catch (e) {}
       const errorDetail = lastErrorLines.slice(-3).join(' | ');
       sendSafe('otg-status', { running: false, code, error: errorDetail });
     });
 
-    const modeName = mirrorScreen
-      ? `Chiếu màn hình PC (${codec ? codec.toUpperCase() : 'H265'} | ${fps || 120} FPS | Đệm: ${effectiveBuffer || 0}ms)`
+    const modeName = isVideoEnabled
+      ? (tabStyle === 'pip' ? `Tab Mini PIP Đồng Bộ Chuột PC (120 FPS)` : `Cửa Sổ Chuẩn PC (${codec ? codec.toUpperCase() : 'H265'} | ${fps || 120} FPS)`)
       : 'Điều Khiển Ngầm Trực Tiếp (0% CPU, Ẩn hoàn toàn cửa sổ đen)';
 
     showOsdNotification({
@@ -1146,7 +1189,10 @@ function stopActiveControl() {
       controlProcess.kill();
     } catch (e) {}
     controlProcess = null;
-    return { success: true, message: 'Đã dừng điều khiển.' };
+    try {
+      execFile(path.join(binDir, 'switch_mouse.exe'), ['--restore'], { windowsHide: true });
+    } catch (e) {}
+    return { success: true, message: 'Đã dừng điều khiển và khôi phục tốc độ chuột PC.' };
   }
   return { success: true, message: 'Chưa có phiên nào hoạt động.' };
 }

@@ -120,6 +120,8 @@ const elSelMaxSize = document.getElementById('selMaxSize');
 const elSelBitrate = document.getElementById('selBitrate');
 const elSelRenderDriver = document.getElementById('selRenderDriver');
 const elSelMouseSpeed = document.getElementById('selMouseSpeed');
+const elSelMouseMode = document.getElementById('selMouseMode');
+const elSelTabStyle = document.getElementById('selTabStyle');
 const elChkMirrorScreen = document.getElementById('chkMirrorScreen');
 const elChkEnableControl = document.getElementById('chkEnableControl');
 const elChkUhidInput = document.getElementById('chkUhidInput');
@@ -316,7 +318,9 @@ async function startCurrentControl() {
     maxSize: parseInt(elSelMaxSize.value) || 1080,
     bitrate: elSelBitrate.value,
     renderDriver: elSelRenderDriver.value,
-    mouseSpeed: elSelMouseSpeed ? elSelMouseSpeed.value : '0.4',
+    mouseSpeed: elSelMouseSpeed ? elSelMouseSpeed.value : '0.35',
+    mouseMode: elSelMouseMode ? elSelMouseMode.value : 'sdk',
+    tabStyle: elSelTabStyle ? elSelTabStyle.value : 'pip',
     mirrorScreen: elChkMirrorScreen.checked,
     enableControl: elChkEnableControl ? elChkEnableControl.checked : true,
     uhidInput: elChkUhidInput ? elChkUhidInput.checked : true,
@@ -364,6 +368,37 @@ if (elBtnStopMirror) {
     await window.api.stopControl();
     setControllingState(false);
     updateFooterLog('Đã dừng chiếu màn hình và nhả chuột về máy tính.');
+  });
+}
+
+// Thay đổi tức thì độ nhạy chuột ĐT (Không cần khởi động lại)
+if (elSelMouseSpeed) {
+  elSelMouseSpeed.addEventListener('change', async () => {
+    const val = elSelMouseSpeed.value;
+    if (window.api && window.api.setMouseSpeed) {
+      await window.api.setMouseSpeed(val);
+    }
+    const label = elSelMouseSpeed.options[elSelMouseSpeed.selectedIndex] ? elSelMouseSpeed.options[elSelMouseSpeed.selectedIndex].text : val;
+    updateFooterLog(`⚡ Đã cập nhật độ nhạy chuột ĐT: ${label}`);
+  });
+}
+
+// Đồng bộ giữa checkbox Chiếu màn hình và Kiểu Tab
+if (elSelTabStyle && elChkMirrorScreen) {
+  elSelTabStyle.addEventListener('change', () => {
+    if (elSelTabStyle.value === 'hidden') {
+      elChkMirrorScreen.checked = false;
+    } else {
+      elChkMirrorScreen.checked = true;
+    }
+  });
+
+  elChkMirrorScreen.addEventListener('change', () => {
+    if (!elChkMirrorScreen.checked) {
+      elSelTabStyle.value = 'hidden';
+    } else if (elSelTabStyle.value === 'hidden') {
+      elSelTabStyle.value = 'pip';
+    }
   });
 }
 

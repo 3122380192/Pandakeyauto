@@ -221,16 +221,25 @@
               </select>
             </div>
 
+            <!-- Chế độ chuột: SDK 1:1 Đồng bộ PC vs UHID Hardware -->
+            <div class="tuning-item">
+              <label for="selMouseMode">Chế Độ Chuột (Mouse Sync):</label>
+              <select id="selMouseMode" class="select-modern">
+                <option value="sdk" selected>⭐ Đồng Bộ PC 1:1 (Chuẩn Mượt Như Tab)</option>
+                <option value="uhid">🎮 Khóa Chuột UHID (Hãm Tốc Đầm Tay)</option>
+              </select>
+            </div>
+
             <!-- Tốc độ chuột trên Điện thoại -->
             <div class="tuning-item tuning-full-col">
               <label for="selMouseSpeed">Độ Nhạy Chuột ĐT (Sensitivity):</label>
               <select id="selMouseSpeed" class="select-modern">
-                <option value="0.15">15% (Rất chậm - Sniper ngắm xa)</option>
-                <option value="0.25">25% (Chậm - Chuột DPI cao 1600+)</option>
-                <option value="0.35">35% (Vừa vặn - Ghìm tâm cực đầm)</option>
-                <option value="0.5" selected>50% (Chuẩn FPS - Êm ái vừa tay)</option>
-                <option value="0.75">75% (Nhanh - Phản xạ lẹ)</option>
-                <option value="1.0">100% (Gốc PC - Không hãm tốc)</option>
+                <option value="0.15">15% (Mức 1 - Rất chậm / Ghìm Sniper)</option>
+                <option value="0.25">25% (Mức 2 - Chậm vừa / DPI cao 1600+)</option>
+                <option value="0.35" selected>35% (Mức 3 - Cực đầm tay / Khuyên dùng)</option>
+                <option value="0.5">50% (Mức 4 - Chuẩn FPS vừa vặn)</option>
+                <option value="0.75">75% (Mức 5 - Nhanh)</option>
+                <option value="1.0">100% (Mức 6 - Tốc độ gốc PC)</option>
               </select>
             </div>
           </div>
@@ -239,16 +248,25 @@
         <!-- CỘT 2: TÙY CHỌN CHỨC NĂNG & PANDA MOUSE PRO -->
         <div class="settings-col-card">
           <div class="section-header-flex">
-            <h3 class="section-title">🛡️ Quyền & Tính Năng Điều Khiển</h3>
+            <h3 class="section-title">🛡️ Quyền & Kiểu Chiếu Màn Hình</h3>
             <span class="section-sub-tip">Bật / Tắt theo nhu cầu</span>
+          </div>
+
+          <div class="tuning-item" style="margin-bottom: 12px;">
+            <label for="selTabStyle">Kiểu Cửa Sổ Chiếu (Tab Màn Hình):</label>
+            <select id="selTabStyle" class="select-modern">
+              <option value="pip" selected>📌 Mini PIP Góc Màn Hình (Gọn Gàng, Mượt Chuẩn)</option>
+              <option value="normal">🖥️ Cửa Sổ Chuẩn (1080p / 720p)</option>
+              <option value="hidden">🕶️ Ẩn Hoàn Toàn (Chỉ Điều Khiển Ngầm)</option>
+            </select>
           </div>
 
           <div class="checkbox-row-container">
             <label class="checkbox-row highlight-check">
               <input type="checkbox" id="chkMirrorScreen" checked>
               <div class="check-text">
-                <strong>Chiếu màn hình điện thoại lên PC</strong>
-                <small>Bỏ tích nếu chỉ điều khiển trên màn thật ĐT (0% CPU, ẩn tab đen).</small>
+                <strong>Bật chiếu màn hình lên máy tính</strong>
+                <small>Bỏ tích nếu chỉ muốn điều khiển ngầm trên màn thật ĐT.</small>
               </div>
             </label>
 
@@ -263,8 +281,8 @@
             <label class="checkbox-row highlight-check">
               <input type="checkbox" id="chkUhidInput" checked>
               <div class="check-text">
-                <strong>Chế độ chuột & phím phần cứng UHID</strong>
-                <small>Khắc phục triệt để lỗi Vivo/Xiaomi chặn thao tác chạm.</small>
+                <strong>Phím phần cứng UHID (Khuyên dùng)</strong>
+                <small>Khắc phục triệt để lỗi Vivo/Xiaomi chặn phím.</small>
               </div>
             </label>
 

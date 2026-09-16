@@ -67,6 +67,68 @@ public class SwitchMouse {
     [DllImport("user32.dll")]
     public static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, uint dwFlags);
 
+    [DllImport("user32.dll")]
+    public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, ref int pvParam, uint fWinIni);
+
+    [DllImport("user32.dll")]
+    public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, IntPtr pvParam, uint fWinIni);
+
+    public const uint SPI_GETMOUSESPEED = 0x0070;
+    public const uint SPI_SETMOUSESPEED = 0x0071;
+
+    private static int originalPcMouseSpeed = -1;
+    private static bool isSpeedReduced = false;
+
+    private static string GetSpeedConfigPath() {
+        return Path.Combine(Path.GetTempPath(), "pandakey_mouse_speed.txt");
+    }
+
+    private static int GetTargetPhoneSpeed() {
+        try {
+            string file = GetSpeedConfigPath();
+            if (File.Exists(file)) {
+                string text = File.ReadAllText(file).Trim();
+                int val;
+                if (int.TryParse(text, out val)) {
+                    if (val >= 1 && val <= 20) return val;
+                }
+                double dval;
+                if (double.TryParse(text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out dval)) {
+                    if (dval <= 0.18) return 1;
+                    if (dval <= 0.28) return 2;
+                    if (dval <= 0.38) return 2;
+                    if (dval <= 0.55) return 3;
+                    if (dval <= 0.80) return 4;
+                    return (originalPcMouseSpeed > 0 ? originalPcMouseSpeed : 6);
+                }
+            }
+        } catch {}
+        return 2;
+    }
+
+    public static void ApplyPhoneMouseSpeed() {
+        try {
+            int curSpeed = 0;
+            if (SystemParametersInfo(SPI_GETMOUSESPEED, 0, ref curSpeed, 0)) {
+                if (!isSpeedReduced && curSpeed >= 1 && curSpeed <= 20) {
+                    originalPcMouseSpeed = curSpeed;
+                }
+            }
+            int target = GetTargetPhoneSpeed();
+            SystemParametersInfo(SPI_SETMOUSESPEED, 0, (IntPtr)target, 0);
+            isSpeedReduced = true;
+        } catch {}
+    }
+
+    public static void RestorePcMouseSpeed() {
+        try {
+            if (isSpeedReduced && originalPcMouseSpeed >= 1 && originalPcMouseSpeed <= 20) {
+                SystemParametersInfo(SPI_SETMOUSESPEED, 0, (IntPtr)originalPcMouseSpeed, 0);
+                isSpeedReduced = false;
+            }
+        } catch {}
+    }
+
     // Win32 Low-Level Keyboard Hook
     private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
@@ -243,6 +305,9 @@ public class SwitchMouse {
 
             SetCursorPos(targetX, targetY);
 
+            // 5. Khôi phục lại 100% tốc độ chuột gốc của PC
+            RestorePcMouseSpeed();
+
             SaveState("pc");
             Console.WriteLine("RELEASED_TO_PC");
         } catch (Exception ex) {
@@ -264,7 +329,10 @@ public class SwitchMouse {
                 savedPcY = pt.Y;
             }
 
-            // 2. Kiểm tra nếu là cửa sổ ẩn không video -> đảm bảo trong suốt và không hiện taskbar
+            // 2. Tự động hãm tốc độ chuột phần cứng của Windows để khử hoàn toàn hiện tượng gia tốc bay chuột trên ĐT
+            ApplyPhoneMouseSpeed();
+
+            // 3. Kiểm tra nếu là cửa sổ ẩn không video -> đảm bảo trong suốt và không hiện taskbar
             RECT rect;
             GetWindowRect(scrcpyHwnd, out rect);
             bool isHiddenWindow = (rect.Right - rect.Left <= 10 && rect.Bottom - rect.Top <= 10);
@@ -276,7 +344,7 @@ public class SwitchMouse {
                 }
             }
 
-            // 3. Kích hoạt và đưa chuột vào cửa sổ Scrcpy
+            // 4. Kích hoạt và đưa chuột vào cửa sổ Scrcpy
             ShowWindow(scrcpyHwnd, SW_RESTORE);
             SetForegroundWindow(scrcpyHwnd);
 
@@ -394,6 +462,10 @@ public class SwitchMouse {
     }
 
     public static void Main(string[] args) {
+        AppDomain.CurrentDomain.ProcessExit += delegate {
+            RestorePcMouseSpeed();
+        };
+
         if (args != null && args.Length > 0 && (args[0] == "--watch" || args[0] == "--hook")) {
             _hookID = SetHook(_proc);
             Console.WriteLine("ALT_HOOK_READY");
@@ -403,6 +475,10 @@ public class SwitchMouse {
                 DispatchMessage(ref msg);
             }
             UnhookWindowsHookEx(_hookID);
+            RestorePcMouseSpeed();
+        } else if (args != null && args.Length > 0 && args[0] == "--restore") {
+            RestorePcMouseSpeed();
+            Console.WriteLine("PC_SPEED_RESTORED");
         } else {
             Toggle();
         }
