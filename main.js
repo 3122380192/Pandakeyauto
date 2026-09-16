@@ -10,6 +10,17 @@ if (!fs.existsSync(customUserDataPath)) {
   try { fs.mkdirSync(customUserDataPath, { recursive: true }); } catch (e) {}
 }
 
+process.on('uncaughtException', (err) => {
+  try {
+    fs.appendFileSync(path.join(customUserDataPath, 'error.log'), `[${new Date().toISOString()}] UncaughtException: ${err.stack || err}\n`);
+  } catch (e) {}
+});
+process.on('unhandledRejection', (reason) => {
+  try {
+    fs.appendFileSync(path.join(customUserDataPath, 'error.log'), `[${new Date().toISOString()}] UnhandledRejection: ${reason}\n`);
+  } catch (e) {}
+});
+
 // ⭐ SINGLE INSTANCE LOCK: Ngăn chặn chạy nhiều tiến trình ngầm gây xung đột phím tắt và huỷ hoại window
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -19,6 +30,7 @@ if (!gotTheLock) {
   app.on('second-instance', () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
       mainWindow.focus();
     }
   });
@@ -95,6 +107,7 @@ function createWindow() {
     minWidth: 780,
     minHeight: 620,
     backgroundColor: '#080a11',
+    show: true,
     autoHideMenuBar: true,
     frame: true,
     titleBarStyle: 'default',
@@ -108,6 +121,12 @@ function createWindow() {
 
   mainWindow.removeMenu();
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  mainWindow.once('ready-to-show', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -190,6 +209,7 @@ function createOsdWindow() {
     height: winHeight,
     x: x,
     y: y,
+    show: false,
     transparent: true,
     frame: false,
     alwaysOnTop: true,

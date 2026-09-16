@@ -4,4 +4,8 @@ currentDir = fso.GetParentFolderName(WScript.ScriptFullName)
 electronPath = currentDir & "\node_modules\electron\dist\electron.exe"
 
 WshShell.CurrentDirectory = currentDir
-WshShell.Run """" & electronPath & """ """ & currentDir & """", 0, False
+If fso.FileExists(electronPath) Then
+    WshShell.Run """" & electronPath & """ """ & currentDir & """", 1, False
+Else
+    WshShell.Run "npm start", 0, False
+End If
