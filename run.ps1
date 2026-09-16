@@ -64,12 +64,16 @@ Set-Location $installDir
 
 # 4. Kiem tra va khoi chay Electron
 $electronLocal = Join-Path $installDir "node_modules\electron\dist\electron.exe"
-$hasNode = $null -ne (Get-Command npm -ErrorAction SilentlyContinue)
+$hasNpm = $null -ne (Get-Command npm -ErrorAction SilentlyContinue)
 
 if (-not (Test-Path $electronLocal)) {
-    if ($hasNode) {
+    if ($hasNpm) {
         Write-Host " [*] Dang thiet lap moi truong chay (npm install)..." -ForegroundColor Yellow
         Start-Process -FilePath "cmd.exe" -ArgumentList "/c npm install" -WorkingDirectory $installDir -Wait -NoNewWindow
+        $installScript = Join-Path $installDir "node_modules\electron\install.js"
+        if ((Test-Path $installScript) -and (-not (Test-Path $electronLocal))) {
+            Start-Process -FilePath "node.exe" -ArgumentList "`"$installScript`"" -WorkingDirectory $installDir -Wait -NoNewWindow
+        }
     } else {
         Write-Host " [*] May tinh chua co Node.js, dang tai Electron Portable..." -ForegroundColor Yellow
         $electronZipUrl = "https://github.com/electron/electron/releases/download/v30.0.9/electron-v30.0.9-win32-x64.zip"
