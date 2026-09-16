@@ -120,9 +120,10 @@ const elSelMaxSize = document.getElementById('selMaxSize');
 const elSelBitrate = document.getElementById('selBitrate');
 const elSelRenderDriver = document.getElementById('selRenderDriver');
 const elSelMouseSpeed = document.getElementById('selMouseSpeed');
-const elSelMouseMode = document.getElementById('selMouseMode');
-const elSelTabStyle = document.getElementById('selTabStyle');
-const elChkMirrorScreen = document.getElementById('chkMirrorScreen');
+const elRadModeBlackTab = document.getElementById('radModeBlackTab');
+const elRadModeMirror = document.getElementById('radModeMirror');
+const elLblModeBlackTab = document.getElementById('lblModeBlackTab');
+const elLblModeMirror = document.getElementById('lblModeMirror');
 const elChkEnableControl = document.getElementById('chkEnableControl');
 const elChkUhidInput = document.getElementById('chkUhidInput');
 const elChkTurnScreenOff = document.getElementById('chkTurnScreenOff');
@@ -221,16 +222,23 @@ function setControllingState(active) {
     }
   }
 
+  const isMirror = elRadModeMirror && elRadModeMirror.checked;
+
   if (active) {
     elStatusDot.className = 'dot connected';
     if (elBtnStartMirror) elBtnStartMirror.classList.add('running');
-    if (elBtnMirrorTitle) elBtnMirrorTitle.textContent = `ĐANG CHIẾU [${activeProfile ? activeProfile.name : 'GAME'}] (BẤM ĐỂ NẠP LẠI)`;
+    if (elBtnMirrorTitle) {
+      elBtnMirrorTitle.textContent = isMirror
+        ? `ĐANG CHIẾU [${activeProfile ? activeProfile.name : 'GAME'}] (BẤM ĐỂ NẠP LẠI)`
+        : `ĐANG BẬT [TAB BẢNG ĐEN] (BẤM ĐỂ NẠP LẠI)`;
+    }
     if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Phím: Alt / F1 (Đổi chuột) | Alt+Right/Left (Đổi chế độ) | Alt+X (Boss Key)';
-    updateFooterLog('🎮 ĐANG ĐIỀU KHIỂN & CHIẾU MÀN HÌNH! Nhấn Alt hoặc F1 để chuyển đổi chuột giữa ĐT & PC.');
+    updateFooterLog(isMirror
+      ? '🎮 ĐANG ĐIỀU KHIỂN & CHIẾU MÀN HÌNH! Nhấn Alt hoặc F1 để chuyển đổi chuột giữa ĐT & PC.'
+      : '⬛ ĐANG BẬT TAB BẢNG ĐEN (TỐI ƯU TỐC ĐỘ CHUỘT NHẤT)! Nhấn Alt để chuyển đổi chuột.');
   } else {
     if (elBtnStartMirror) elBtnStartMirror.classList.remove('running');
-    if (elBtnMirrorTitle) elBtnMirrorTitle.textContent = 'BẮT ĐẦU CHIẾU MÀN HÌNH';
-    if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Chiếu lên PC & Tương tác chuột phím (Phím tắt: Alt / F1 đổi chuột)';
+    updateModeCardVisuals();
     updateDeviceList();
   }
 }
@@ -309,6 +317,7 @@ async function startCurrentControl() {
     return;
   }
 
+  const isMirror = elRadModeMirror ? elRadModeMirror.checked : false;
   const options = {
     deviceId: currentDeviceId,
     codec: elSelCodec.value,
@@ -318,15 +327,13 @@ async function startCurrentControl() {
     maxSize: parseInt(elSelMaxSize.value) || 1080,
     bitrate: elSelBitrate.value,
     renderDriver: elSelRenderDriver.value,
-    mouseSpeed: elSelMouseSpeed ? elSelMouseSpeed.value : '0.35',
-    mouseMode: elSelMouseMode ? elSelMouseMode.value : 'sdk',
-    tabStyle: elSelTabStyle ? elSelTabStyle.value : 'pip',
-    mirrorScreen: elChkMirrorScreen.checked,
+    mouseSpeed: elSelMouseSpeed ? elSelMouseSpeed.value : 'native',
+    mirrorScreen: isMirror,
     enableControl: elChkEnableControl ? elChkEnableControl.checked : true,
     uhidInput: elChkUhidInput ? elChkUhidInput.checked : true,
     turnScreenOff: elChkTurnScreenOff ? elChkTurnScreenOff.checked : false,
-    forwardAudio: elChkForwardAudio.checked,
-    stayAwake: elChkStayAwake.checked
+    forwardAudio: elChkForwardAudio ? elChkForwardAudio.checked : true,
+    stayAwake: elChkStayAwake ? elChkStayAwake.checked : true
   };
 
   updateFooterLog(`Đang kích hoạt [${activeProfile ? activeProfile.name : 'Game'}]: ${options.codec.toUpperCase()} | ${options.fps} FPS | Đệm: ${options.displayBuffer}ms...`);
@@ -383,23 +390,28 @@ if (elSelMouseSpeed) {
   });
 }
 
-// Đồng bộ giữa checkbox Chiếu màn hình và Kiểu Tab
-if (elSelTabStyle && elChkMirrorScreen) {
-  elSelTabStyle.addEventListener('change', () => {
-    if (elSelTabStyle.value === 'hidden') {
-      elChkMirrorScreen.checked = false;
-    } else {
-      elChkMirrorScreen.checked = true;
-    }
-  });
+// Đồng bộ giao diện khi chuyển đổi giữa Tab Bảng Đen và Chiếu Màn Hình PC
+function updateModeCardVisuals() {
+  const isMirror = elRadModeMirror && elRadModeMirror.checked;
+  if (elLblModeMirror) elLblModeMirror.classList.toggle('active', isMirror);
+  if (elLblModeBlackTab) elLblModeBlackTab.classList.toggle('active', !isMirror);
 
-  elChkMirrorScreen.addEventListener('change', () => {
-    if (!elChkMirrorScreen.checked) {
-      elSelTabStyle.value = 'hidden';
-    } else if (elSelTabStyle.value === 'hidden') {
-      elSelTabStyle.value = 'pip';
+  if (!isControlling) {
+    if (isMirror) {
+      if (elBtnMirrorTitle) elBtnMirrorTitle.textContent = 'BẮT ĐẦU CHIẾU MÀN HÌNH';
+      if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Chiếu lên PC & Tương tác chuột phím (Phím: Alt / F1 đổi chuột)';
+    } else {
+      if (elBtnMirrorTitle) elBtnMirrorTitle.textContent = 'BẮT ĐẦU ĐIỀU KHIỂN (TAB BẢNG ĐEN)';
+      if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Mở tab bắt chuột tối ưu tốc độ • Bấm Alt đổi chuột tức thì 0ms';
     }
-  });
+  }
+}
+
+if (elRadModeBlackTab) {
+  elRadModeBlackTab.addEventListener('change', updateModeCardVisuals);
+}
+if (elRadModeMirror) {
+  elRadModeMirror.addEventListener('change', updateModeCardVisuals);
 }
 
 // ⭐ FORM THÊM GAME MỚI
@@ -966,6 +978,7 @@ window.addEventListener('DOMContentLoaded', () => {
   loadProfiles();
   initGithubConfig();
   renderCrosshairPreview();
+  updateModeCardVisuals();
   updateDeviceList();
   setInterval(updateDeviceList, 3000);
 });

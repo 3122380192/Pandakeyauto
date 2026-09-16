@@ -88,33 +88,39 @@ public class SwitchMouse {
             string file = GetSpeedConfigPath();
             if (File.Exists(file)) {
                 string text = File.ReadAllText(file).Trim();
+                if (text == "native" || text == "none" || text == "1.0" || text == "100%") {
+                    return -1; // Giữ nguyên tốc độ gốc của Tab Bảng Đen
+                }
                 int val;
                 if (int.TryParse(text, out val)) {
                     if (val >= 1 && val <= 20) return val;
                 }
                 double dval;
                 if (double.TryParse(text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out dval)) {
+                    if (dval >= 0.95) return -1;
                     if (dval <= 0.18) return 1;
                     if (dval <= 0.28) return 2;
                     if (dval <= 0.38) return 2;
                     if (dval <= 0.55) return 3;
                     if (dval <= 0.80) return 4;
-                    return (originalPcMouseSpeed > 0 ? originalPcMouseSpeed : 6);
+                    return -1;
                 }
             }
         } catch {}
-        return 2;
+        return -1; // Mặc định giữ nguyên tốc độ chuẩn của Tab Bảng Đen
     }
 
     public static void ApplyPhoneMouseSpeed() {
         try {
+            int target = GetTargetPhoneSpeed();
+            if (target <= 0) return; // Không can thiệp nếu là native
+
             int curSpeed = 0;
             if (SystemParametersInfo(SPI_GETMOUSESPEED, 0, ref curSpeed, 0)) {
                 if (!isSpeedReduced && curSpeed >= 1 && curSpeed <= 20) {
                     originalPcMouseSpeed = curSpeed;
                 }
             }
-            int target = GetTargetPhoneSpeed();
             SystemParametersInfo(SPI_SETMOUSESPEED, 0, (IntPtr)target, 0);
             isSpeedReduced = true;
         } catch {}
@@ -329,30 +335,20 @@ public class SwitchMouse {
                 savedPcY = pt.Y;
             }
 
-            // 2. Tự động hãm tốc độ chuột phần cứng của Windows để khử hoàn toàn hiện tượng gia tốc bay chuột trên ĐT
+            // 2. Áp dụng hãm tốc độ nếu người dùng có cấu hình
             ApplyPhoneMouseSpeed();
 
-            // 3. Kiểm tra nếu là cửa sổ ẩn không video -> đảm bảo trong suốt và không hiện taskbar
-            RECT rect;
-            GetWindowRect(scrcpyHwnd, out rect);
-            bool isHiddenWindow = (rect.Right - rect.Left <= 10 && rect.Bottom - rect.Top <= 10);
-            if (isHiddenWindow) {
-                int ex = GetWindowLong(scrcpyHwnd, GWL_EXSTYLE);
-                if ((ex & WS_EX_LAYERED) == 0) {
-                    SetWindowLong(scrcpyHwnd, GWL_EXSTYLE, ex | WS_EX_LAYERED | WS_EX_TOOLWINDOW);
-                    SetLayeredWindowAttributes(scrcpyHwnd, 0, 1, LWA_ALPHA);
-                }
-            }
-
-            // 4. Kích hoạt và đưa chuột vào cửa sổ Scrcpy
+            // 3. Kích hoạt và đưa chuột vào trung tâm cửa sổ Tab Bảng Đen
             ShowWindow(scrcpyHwnd, SW_RESTORE);
             SetForegroundWindow(scrcpyHwnd);
 
+            RECT rect;
+            GetWindowRect(scrcpyHwnd, out rect);
             int targetX = (rect.Left + rect.Right) / 2;
             int targetY = (rect.Top + rect.Bottom) / 2;
             SetCursorPos(targetX, targetY);
 
-            // Bắt chuột vào Scrcpy
+            // 4. Click để bắt chuột vào Scrcpy
             mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
             mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 

@@ -863,10 +863,66 @@ body {
 }
 
 /* Checkboxes */
+/* Mode Selector Cards */
+.mode-select-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.mode-card-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: var(--trans-fast);
+}
+
+.mode-card-option:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(0, 242, 254, 0.3);
+}
+
+.mode-card-option.active {
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.12), rgba(79, 70, 229, 0.12));
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.15);
+}
+
+.mode-card-option input[type="radio"] {
+  accent-color: var(--accent-cyan);
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.mode-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mode-card-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.mode-card-sub {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
+
 .checkbox-row-container {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 
 .checkbox-row {

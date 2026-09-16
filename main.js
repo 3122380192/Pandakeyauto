@@ -79,11 +79,9 @@ let crosshairConfig = {
 };
 
 let currentOptions = {
-  mirrorScreen: true,
+  mirrorScreen: false,
   enableControl: true,
   uhidInput: true,
-  mouseMode: 'sdk',
-  tabStyle: 'pip',
   stayAwake: true,
   turnScreenOff: false,
   forwardAudio: true,
@@ -95,7 +93,7 @@ let currentOptions = {
   videoBuffer: 0,
   audioBuffer: 10,
   renderDriver: 'direct3d11',
-  mouseSpeed: '0.35',
+  mouseSpeed: 'native',
   deviceId: null
 };
 
@@ -984,11 +982,9 @@ ipcMain.handle('start-control', async (event, options = {}) => {
   currentOptions = { ...currentOptions, ...options };
   const {
     deviceId,
-    mirrorScreen = true,
+    mirrorScreen = false,
     enableControl = true,
     uhidInput = true,
-    mouseMode = 'sdk', // 'sdk' (đồng bộ 1:1 mượt như PC) hoặc 'uhid' (chuột game hãm tốc)
-    tabStyle = 'pip',  // 'pip' (Mini PIP gọn gàng), 'normal' (chuẩn), 'hidden' (ẩn 100%)
     stayAwake,
     turnScreenOff,
     forwardAudio,
@@ -1000,7 +996,7 @@ ipcMain.handle('start-control', async (event, options = {}) => {
     videoBuffer,
     audioBuffer,
     renderDriver,
-    mouseSpeed = '0.35'
+    mouseSpeed = 'native'
   } = currentOptions;
 
   // Ghi tức thì cấu hình tốc độ chuột để switch_mouse.exe áp dụng hãm tốc độ phần cứng
@@ -1034,23 +1030,13 @@ ipcMain.handle('start-control', async (event, options = {}) => {
     args.push('-s', targetDeviceId);
   }
 
-  const isVideoEnabled = mirrorScreen && tabStyle !== 'hidden';
-
-  if (isVideoEnabled) {
+  if (mirrorScreen) {
     // 1. Kiểm soát quyền điều khiển điện thoại từ máy tính
     if (!enableControl) {
       args.push('--no-control');
     } else {
-      // Bàn phím dùng UHID để Vivo/Xiaomi không bị chặn gõ phím & WASD
-      args.push('--keyboard=uhid');
-
-      // Chế độ chuột:
-      if (mouseMode === 'sdk') {
-        // ⭐ ĐỒNG BỘ 100% TỐC ĐỘ CHUỘT PC (SDK Mode):
-        // Toạ độ tuyệt đối, chuột trên ĐT di chuyển 1:1 chuẩn xác từng milimet y hệt PC
-        args.push('--mouse=sdk');
-      } else {
-        // Chế độ chuột phần cứng UHID (có tự động hãm DPI chuột Windows)
+      if (uhidInput) {
+        args.push('--keyboard=uhid');
         args.push('--mouse=uhid');
       }
     }
@@ -1090,17 +1076,9 @@ ipcMain.handle('start-control', async (event, options = {}) => {
       args.push('--no-audio');
     }
 
-    // 9. Tùy chọn kiểu cửa sổ hiển thị
-    if (tabStyle === 'pip') {
-      // ⭐ TAB MINI PIP: Cực kỳ gọn gàng góc màn hình, không choán chỗ, chuột đồng bộ 100% cực êm
-      args.push('--window-title=APKRemote - Tab Điện Thoại (Alt/F1: Đổi Chuột)');
-      args.push('--always-on-top');
-      args.push('--window-width=380', '--window-height=760');
-    } else {
-      // Cửa sổ chuẩn
-      args.push('--window-title=APKRemote - Màn Hình Điện Thoại (Alt/F1: Đổi Chuột | Alt+X: Ẩn Nhanh | Alt+Z: Khóa Máy)');
-      args.push('--always-on-top');
-    }
+    // 9. Cửa sổ chiếu màn hình
+    args.push('--window-title=Pandakeyauto - Màn Hình Điện Thoại (Bấm Alt: Đổi Chuột)');
+    args.push('--always-on-top');
 
     // 10. Tắt màn hình thật của điện thoại khi chiếu lên PC (nếu người dùng tích chọn checkbox)
     if (turnScreenOff) {
@@ -1112,19 +1090,17 @@ ipcMain.handle('start-control', async (event, options = {}) => {
       args.push('--stay-awake');
     }
   } else {
-    // Không chiếu màn hình PC, điều khiển thẳng trên màn thật của điện thoại
-    // ⭐ ẨN HOÀN TOÀN: 1x1 borderless, trong suốt, 0% CPU, không hiện bất kỳ cửa sổ/tab đen nào
+    // ⭐ TAB BẢNG ĐEN (VÙNG BẮT CHUỘT TRỰC TIẾP - 0% CPU, TỐI ƯU TỐC ĐỘ CHUỘT CHUẨN XÁC)
     args.push('-K', '-M', '--no-video-playback');
-    args.push('--window-borderless');
-    args.push('--window-width=1', '--window-height=1');
-    args.push('--window-x=0', '--window-y=0');
-    args.push('--window-title=APKRemote_HiddenCapture');
+    args.push('--window-width=360', '--window-height=140');
+    args.push('--window-title=Pandakeyauto - Vung Bat Chuot (Nhan Alt de doi chuot)');
+    args.push('--always-on-top');
     if (stayAwake) args.push('--stay-awake');
     if (!forwardAudio) args.push('--no-audio');
   }
 
   try {
-    const mouseScale = (mouseSpeed !== undefined && mouseSpeed !== null) ? mouseSpeed.toString() : '0.35';
+    const mouseScale = (mouseSpeed !== undefined && mouseSpeed !== null && mouseSpeed !== 'native') ? mouseSpeed.toString() : '1.0';
     controlProcess = spawn(scrcpyPath, args, {
       cwd: binDir,
       windowsHide: true,
@@ -1158,9 +1134,9 @@ ipcMain.handle('start-control', async (event, options = {}) => {
       sendSafe('otg-status', { running: false, code, error: errorDetail });
     });
 
-    const modeName = isVideoEnabled
-      ? (tabStyle === 'pip' ? `Tab Mini PIP Đồng Bộ Chuột PC (120 FPS)` : `Cửa Sổ Chuẩn PC (${codec ? codec.toUpperCase() : 'H265'} | ${fps || 120} FPS)`)
-      : 'Điều Khiển Ngầm Trực Tiếp (0% CPU, Ẩn hoàn toàn cửa sổ đen)';
+    const modeName = mirrorScreen
+      ? `Chiếu màn hình PC (${codec ? codec.toUpperCase() : 'H265'} | ${fps || 120} FPS)`
+      : 'Tab Bảng Đen (Vùng Bắt Chuột - Tối Ưu Tốc Độ Chuột Nhất)';
 
     showOsdNotification({
       icon: '🎮',

@@ -221,55 +221,47 @@
               </select>
             </div>
 
-            <!-- Chế độ chuột: SDK 1:1 Đồng bộ PC vs UHID Hardware -->
-            <div class="tuning-item">
-              <label for="selMouseMode">Chế Độ Chuột (Mouse Sync):</label>
-              <select id="selMouseMode" class="select-modern">
-                <option value="sdk" selected>⭐ Đồng Bộ PC 1:1 (Chuẩn Mượt Như Tab)</option>
-                <option value="uhid">🎮 Khóa Chuột UHID (Hãm Tốc Đầm Tay)</option>
-              </select>
-            </div>
-
             <!-- Tốc độ chuột trên Điện thoại -->
             <div class="tuning-item tuning-full-col">
               <label for="selMouseSpeed">Độ Nhạy Chuột ĐT (Sensitivity):</label>
               <select id="selMouseSpeed" class="select-modern">
-                <option value="0.15">15% (Mức 1 - Rất chậm / Ghìm Sniper)</option>
-                <option value="0.25">25% (Mức 2 - Chậm vừa / DPI cao 1600+)</option>
-                <option value="0.35" selected>35% (Mức 3 - Cực đầm tay / Khuyên dùng)</option>
-                <option value="0.5">50% (Mức 4 - Chuẩn FPS vừa vặn)</option>
-                <option value="0.75">75% (Mức 5 - Nhanh)</option>
-                <option value="1.0">100% (Mức 6 - Tốc độ gốc PC)</option>
+                <option value="native" selected>⭐ Tốc độ chuẩn Tab Bảng Đen (Khuyên dùng - Cực mượt)</option>
+                <option value="0.25">25% (Hãm tốc chậm - Chuột DPI cao 1600+)</option>
+                <option value="0.35">35% (Hãm tốc vừa - Ghìm tâm cực đầm)</option>
+                <option value="0.5">50% (Hãm nhẹ - Chuẩn FPS)</option>
+                <option value="1.0">100% (Gốc PC - Không can thiệp)</option>
               </select>
             </div>
           </div>
         </div>
 
-        <!-- CỘT 2: TÙY CHỌN CHỨC NĂNG & PANDA MOUSE PRO -->
+        <!-- CỘT 2: CHỌN CHẾ ĐỘ & TÙY CHỌN CHỨC NĂNG -->
         <div class="settings-col-card">
           <div class="section-header-flex">
-            <h3 class="section-title">🛡️ Quyền & Kiểu Chiếu Màn Hình</h3>
-            <span class="section-sub-tip">Bật / Tắt theo nhu cầu</span>
+            <h3 class="section-title">🛡️ Chế Độ & Tính Năng Điều Khiển</h3>
+            <span class="section-sub-tip">Tối ưu theo nhu cầu</span>
           </div>
 
-          <div class="tuning-item" style="margin-bottom: 12px;">
-            <label for="selTabStyle">Kiểu Cửa Sổ Chiếu (Tab Màn Hình):</label>
-            <select id="selTabStyle" class="select-modern">
-              <option value="pip" selected>📌 Mini PIP Góc Màn Hình (Gọn Gàng, Mượt Chuẩn)</option>
-              <option value="normal">🖥️ Cửa Sổ Chuẩn (1080p / 720p)</option>
-              <option value="hidden">🕶️ Ẩn Hoàn Toàn (Chỉ Điều Khiển Ngầm)</option>
-            </select>
-          </div>
-
-          <div class="checkbox-row-container">
-            <label class="checkbox-row highlight-check">
-              <input type="checkbox" id="chkMirrorScreen" checked>
-              <div class="check-text">
-                <strong>Bật chiếu màn hình lên máy tính</strong>
-                <small>Bỏ tích nếu chỉ muốn điều khiển ngầm trên màn thật ĐT.</small>
+          <!-- CHỌN CHẾ ĐỘ: TAB BẢNG ĐEN HOẶC CHIẾU MÀN HÌNH -->
+          <div class="mode-select-box">
+            <label class="mode-card-option active" id="lblModeBlackTab">
+              <input type="radio" name="mainControlMode" id="radModeBlackTab" value="blackTab" checked>
+              <div class="mode-card-content">
+                <div class="mode-card-title">⬛ Tab Bảng Đen (Vùng Bắt Chuột)</div>
+                <div class="mode-card-sub">⭐ Tối ưu tốc độ chuột nhất • 0% CPU • Đổi chuột Alt 0ms</div>
               </div>
             </label>
 
+            <label class="mode-card-option" id="lblModeMirror">
+              <input type="radio" name="mainControlMode" id="radModeMirror" value="mirror">
+              <div class="mode-card-content">
+                <div class="mode-card-title">🖥️ Chiếu Màn Hình PC (120 FPS)</div>
+                <div class="mode-card-sub">Hiển thị video màn hình điện thoại lên máy tính</div>
+              </div>
+            </label>
+          </div>
+
+          <div class="checkbox-row-container">
             <label class="checkbox-row highlight-check">
               <input type="checkbox" id="chkEnableControl" checked>
               <div class="check-text">
