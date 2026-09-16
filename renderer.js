@@ -222,12 +222,12 @@ function setControllingState(active) {
     elStatusDot.className = 'dot connected';
     if (elBtnStartMirror) elBtnStartMirror.classList.add('running');
     if (elBtnMirrorTitle) elBtnMirrorTitle.textContent = `ĐANG CHIẾU [${activeProfile ? activeProfile.name : 'GAME'}] (BẤM ĐỂ NẠP LẠI)`;
-    if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Phím: Alt+Right/Left (Đổi chế độ) | F1 / Alt+3 (Đổi chuột) | Alt+X (Boss Key)';
-    updateFooterLog('🎮 ĐANG ĐIỀU KHIỂN & CHIẾU MÀN HÌNH! Bấm F1 hoặc Alt+3 để chuyển đổi chuột giữa ĐT & PC.');
+    if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Phím: Alt / F1 (Đổi chuột) | Alt+Right/Left (Đổi chế độ) | Alt+X (Boss Key)';
+    updateFooterLog('🎮 ĐANG ĐIỀU KHIỂN & CHIẾU MÀN HÌNH! Nhấn Alt hoặc F1 để chuyển đổi chuột giữa ĐT & PC.');
   } else {
     if (elBtnStartMirror) elBtnStartMirror.classList.remove('running');
     if (elBtnMirrorTitle) elBtnMirrorTitle.textContent = 'BẮT ĐẦU CHIẾU MÀN HÌNH';
-    if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Chiếu lên PC & Tương tác chuột phím (Phím tắt: F1 / Alt+3)';
+    if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Chiếu lên PC & Tương tác chuột phím (Phím tắt: Alt / F1 đổi chuột)';
     updateDeviceList();
   }
 }

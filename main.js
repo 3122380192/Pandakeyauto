@@ -108,6 +108,7 @@ function createWindow() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+    stopMouseWatcher();
     globalShortcut.unregisterAll();
     stopActiveControl();
     if (osdWindow && !osdWindow.isDestroyed()) {
@@ -315,6 +316,7 @@ function updateCrosshairOverlay() {
 app.whenReady().then(() => {
   createWindow();
   createOsdWindow();
+  startMouseWatcher();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -322,6 +324,7 @@ app.whenReady().then(() => {
 });
 
 app.on('will-quit', () => {
+  stopMouseWatcher();
   globalShortcut.unregisterAll();
   stopActiveControl();
   if (crosshairWindow) {
@@ -459,41 +462,81 @@ function toggleBossKeyHide() {
   }
 }
 
-// XỬ LÝ PHÍM ĐỔI CHUỘT (Alt+3 hoặc F1): Chuyển đổi chuột 2 chiều siêu tốc 0ms lag
+// XỬ LÝ PHÍM ĐỔI CHUỘT (Alt, F1, Alt+3): Chuyển đổi chuột 2 chiều siêu tốc 0ms lag
+let mouseWatcherProcess = null;
+
+function handleMouseSwitchOutput(out) {
+  if (out.includes('RELEASED_TO_PC')) {
+    showOsdNotification({
+      icon: '🖱️',
+      game: 'ĐỔI CHUỘT',
+      badge: 'Alt / F1',
+      mode: 'Đã nhả chuột về Máy Tính',
+      specs: 'Di chuyển chuột tự do trên PC'
+    });
+    sendLog('🔄 [Đổi chuột Alt/F1] Đã nhả chuột về MÁY TÍNH thành công!');
+  } else if (out.includes('CAPTURED_TO_PHONE')) {
+    showOsdNotification({
+      icon: '🎮',
+      game: 'ĐỔI CHUỘT',
+      badge: 'Alt / F1',
+      mode: 'Đã đưa chuột vào Game Điện Thoại',
+      specs: 'Tương tác trực tiếp trên màn hình game'
+    });
+    sendLog('🎮 [Đổi chuột Alt/F1] Đã đưa chuột sang ĐIỆN THOẠI thành công!');
+  } else if (out.includes('SCRCPY_NOT_RUNNING')) {
+    showOsdNotification({
+      icon: '⚠️',
+      game: 'CHƯA CHIẾU MÀN HÌNH',
+      badge: 'Alt / F1',
+      mode: 'Màn hình điện thoại chưa bật',
+      specs: 'Bấm Bắt đầu chiếu màn hình trước'
+    });
+    sendLog('⚠️ [Đổi chuột] Chưa có phiên chiếu màn hình nào đang chạy. Vui lòng bấm "▶ BẮT ĐẦU CHIẾU MÀN HÌNH"!');
+  }
+}
+
+function startMouseWatcher() {
+  if (mouseWatcherProcess) return;
+  const switcherPath = path.join(binDir, 'switch_mouse.exe');
+  if (!fs.existsSync(switcherPath)) return;
+
+  try {
+    mouseWatcherProcess = spawn(switcherPath, ['--watch'], {
+      cwd: binDir,
+      windowsHide: true
+    });
+
+    mouseWatcherProcess.stdout.on('data', (data) => {
+      const text = data.toString();
+      const lines = text.split('\n');
+      for (let line of lines) {
+        line = line.trim();
+        if (line) handleMouseSwitchOutput(line);
+      }
+    });
+
+    mouseWatcherProcess.on('close', () => {
+      mouseWatcherProcess = null;
+    });
+  } catch (err) {
+    console.error('Lỗi khi chạy watcher chuột:', err);
+  }
+}
+
+function stopMouseWatcher() {
+  if (mouseWatcherProcess) {
+    try { mouseWatcherProcess.kill(); } catch (e) {}
+    mouseWatcherProcess = null;
+  }
+}
+
 function switchMouseFocus() {
   try {
     const switcherPath = path.join(binDir, 'switch_mouse.exe');
     execFile(switcherPath, (err, stdout) => {
       const out = stdout ? stdout.trim() : '';
-
-      if (out.includes('RELEASED_TO_PC')) {
-        showOsdNotification({
-          icon: '🖱️',
-          game: 'ĐỔI CHUỘT',
-          badge: 'Alt+3 / F1',
-          mode: 'Đã nhả chuột về Máy Tính',
-          specs: 'Di chuyển chuột tự do trên PC'
-        });
-        sendLog('🔄 [Đổi chuột Alt+3/F1] Đã nhả chuột về MÁY TÍNH thành công!');
-      } else if (out.includes('CAPTURED_TO_PHONE')) {
-        showOsdNotification({
-          icon: '🎮',
-          game: 'ĐỔI CHUỘT',
-          badge: 'Alt+3 / F1',
-          mode: 'Đã đưa chuột vào Game Điện Thoại',
-          specs: 'Tương tác trực tiếp trên màn hình game'
-        });
-        sendLog('🎮 [Đổi chuột Alt+3/F1] Đã đưa chuột sang ĐIỆN THOẠI thành công!');
-      } else if (out.includes('SCRCPY_NOT_RUNNING')) {
-        showOsdNotification({
-          icon: '⚠️',
-          game: 'CHƯA CHIẾU MÀN HÌNH',
-          badge: 'Alt+3 / F1',
-          mode: 'Màn hình điện thoại chưa bật',
-          specs: 'Bấm Bắt đầu chiếu màn hình trước'
-        });
-        sendLog('⚠️ [Đổi chuột] Chưa có phiên chiếu màn hình nào đang chạy. Vui lòng bấm "▶ BẮT ĐẦU CHIẾU MÀN HÌNH"!');
-      }
+      handleMouseSwitchOutput(out);
     });
   } catch (err) {
     console.error('Lỗi khi đổi chuột:', err);
@@ -1047,12 +1090,12 @@ ipcMain.handle('start-control', async (event, options = {}) => {
       game: 'KÍCH HOẠT THÀNH CÔNG',
       badge: `${fps || 120} FPS`,
       mode: modeName,
-      specs: 'Alt+Right/Left: Đổi chế độ • Alt+Z: Khóa ĐT • Alt+3: Đổi chuột'
+      specs: 'Alt / F1: Đổi chuột • Alt+Right/Left: Chế độ • Alt+Z: Khóa ĐT'
     });
 
     return {
       success: true,
-      message: `Đã kích hoạt [${modeName}]! Bấm Alt+Right/Left đổi chế độ, Alt+Z Khóa màn hình, Alt+3 Đổi chuột.`
+      message: `Đã kích hoạt [${modeName}]! Bấm Alt / F1 đổi chuột, Alt+Right/Left đổi chế độ, Alt+Z Khóa màn hình.`
     };
   } catch (error) {
     return { success: false, message: error.message };
