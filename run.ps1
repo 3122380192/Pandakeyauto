@@ -1,18 +1,13 @@
-<#
-.SYNOPSIS
-  Pandakeyauto Pro VIP - Trình Khởi Chạy Tự Động Từ Xa (Remote 1-Click Launcher)
-.DESCRIPTION
-  Tự động tải và khởi chạy Pandakeyauto Pro trên bất kỳ máy tính Windows nào
-  mà không cần cài đặt thủ công.
-#>
+# Pandakeyauto Pro VIP - Remote 1-Click Launcher
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$ProgressPreference = 'SilentlyContinue'
 $Host.UI.RawUI.WindowTitle = "Pandakeyauto Pro - Dang Khoi Chay..."
 
 Write-Host ""
 Write-Host " ===========================================================" -ForegroundColor Cyan
-Write-Host "   🎮 PANDAKEYAUTO PRO VIP v2.0 - REMOTE 1-CLICK LAUNCHER  " -ForegroundColor Yellow
-Write-Host "   Khong can tai thu cong - Tu dong dong bo ma nguon moi nhat" -ForegroundColor Gray
+Write-Host "   PANDAKEYAUTO PRO VIP v2.0 - REMOTE 1-CLICK LAUNCHER     " -ForegroundColor Yellow
+Write-Host "   Khong can tai thu cong - Tu dong dong bo tu GitHub      " -ForegroundColor Gray
 Write-Host " ===========================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -34,7 +29,9 @@ if (-not (Test-Path $installDir)) {
 Write-Host " [*] Dang tai ma nguon moi nhat tu GitHub..." -ForegroundColor Cyan
 try {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile -UseBasicParsing
+    $wc = New-Object System.Net.WebClient
+    $wc.DownloadFile($zipUrl, $zipFile)
+    $wc.Dispose()
     Write-Host " [+] Da tai xong ma nguon!" -ForegroundColor Green
 } catch {
     Write-Host " [!] Khong the tai tu GitHub: $_" -ForegroundColor Red
@@ -51,7 +48,6 @@ try {
     
     $extractedFolder = Join-Path $tempExtract "$repoName-$branch"
     if (Test-Path $extractedFolder) {
-        # Copy toan bo tep vao installDir (giu lai node_modules neu da co)
         Get-ChildItem -Path $extractedFolder | ForEach-Object {
             $dest = Join-Path $installDir $_.Name
             Copy-Item -Path $_.FullName -Destination $dest -Recurse -Force
@@ -72,7 +68,7 @@ $hasNode = $null -ne (Get-Command npm -ErrorAction SilentlyContinue)
 
 if (-not (Test-Path $electronLocal)) {
     if ($hasNode) {
-        Write-Host " [*] Dang thiet lap moi truong chay (npm install electron)..." -ForegroundColor Yellow
+        Write-Host " [*] Dang thiet lap moi truong chay (npm install)..." -ForegroundColor Yellow
         Start-Process -FilePath "cmd.exe" -ArgumentList "/c npm install" -WorkingDirectory $installDir -Wait -NoNewWindow
     } else {
         Write-Host " [*] May tinh chua co Node.js, dang tai Electron Portable..." -ForegroundColor Yellow
@@ -80,7 +76,9 @@ if (-not (Test-Path $electronLocal)) {
         $electronZip = Join-Path $env:TEMP "electron_portable.zip"
         $electronTarget = Join-Path $installDir "node_modules\electron\dist"
         New-Item -ItemType Directory -Path $electronTarget -Force | Out-Null
-        Invoke-WebRequest -Uri $electronZipUrl -OutFile $electronZip -UseBasicParsing
+        $wc2 = New-Object System.Net.WebClient
+        $wc2.DownloadFile($electronZipUrl, $electronZip)
+        $wc2.Dispose()
         Expand-Archive -Path $electronZip -DestinationPath $electronTarget -Force
         Remove-Item -Force $electronZip -ErrorAction SilentlyContinue
         Write-Host " [+] Da thiet lap xong Electron Portable!" -ForegroundColor Green
@@ -90,18 +88,15 @@ if (-not (Test-Path $electronLocal)) {
 # 5. Khoi dong Pandakeyauto hoan toan khong co bang den
 Write-Host " [>>] Dang mo Pandakeyauto Pro GUI..." -ForegroundColor Green
 $vbsScript = Join-Path $installDir "start.vbs"
-$vbsScriptVn = Join-Path $installDir "Khởi Động Pandakeyauto.vbs"
 
 if (Test-Path $vbsScript) {
     Start-Process -FilePath "wscript.exe" -ArgumentList "`"$vbsScript`"" -WorkingDirectory $installDir
-} elseif (Test-Path $vbsScriptVn) {
-    Start-Process -FilePath "wscript.exe" -ArgumentList "`"$vbsScriptVn`"" -WorkingDirectory $installDir
 } else {
     $electronExe = Join-Path $installDir "node_modules\electron\dist\electron.exe"
     Start-Process -FilePath $electronExe -ArgumentList "`"$installDir`"" -WorkingDirectory $installDir
 }
 
 Start-Sleep -Seconds 1
-Write-Host " [✔] Ung dung da san sang tren man hinh! Chuc ban chien game vui ve." -ForegroundColor Cyan
+Write-Host " [OK] Ung dung da san sang tren man hinh! Chuc ban chien game vui ve." -ForegroundColor Cyan
 Start-Sleep -Seconds 2
 exit 0
