@@ -88,10 +88,14 @@ if (-not (Test-Path $electronLocal)) {
 }
 
 # 5. Khoi dong Pandakeyauto hoan toan khong co bang den
-Write-Host " [🚀] Dang mo Pandakeyauto Pro GUI..." -ForegroundColor Green
-$vbsScript = Join-Path $installDir "Khởi Động Pandakeyauto.vbs"
+Write-Host " [>>] Dang mo Pandakeyauto Pro GUI..." -ForegroundColor Green
+$vbsScript = Join-Path $installDir "start.vbs"
+$vbsScriptVn = Join-Path $installDir "Khởi Động Pandakeyauto.vbs"
+
 if (Test-Path $vbsScript) {
     Start-Process -FilePath "wscript.exe" -ArgumentList "`"$vbsScript`"" -WorkingDirectory $installDir
+} elseif (Test-Path $vbsScriptVn) {
+    Start-Process -FilePath "wscript.exe" -ArgumentList "`"$vbsScriptVn`"" -WorkingDirectory $installDir
 } else {
     $electronExe = Join-Path $installDir "node_modules\electron\dist\electron.exe"
     Start-Process -FilePath $electronExe -ArgumentList "`"$installDir`"" -WorkingDirectory $installDir
