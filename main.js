@@ -80,6 +80,7 @@ let currentOptions = {
   videoBuffer: 0,
   audioBuffer: 10,
   renderDriver: 'direct3d11',
+  mouseSpeed: '0.4',
   deviceId: null
 };
 
@@ -960,7 +961,8 @@ ipcMain.handle('start-control', async (event, options = {}) => {
     displayBuffer,
     videoBuffer,
     audioBuffer,
-    renderDriver
+    renderDriver,
+    mouseSpeed = '0.4'
   } = currentOptions;
 
   const effectiveBuffer = (videoBuffer !== undefined && videoBuffer !== null) ? videoBuffer : (displayBuffer !== undefined && displayBuffer !== null ? displayBuffer : 0);
@@ -1061,9 +1063,16 @@ ipcMain.handle('start-control', async (event, options = {}) => {
   }
 
   try {
+    const mouseScale = (mouseSpeed !== undefined && mouseSpeed !== null) ? mouseSpeed.toString() : '0.4';
     controlProcess = spawn(scrcpyPath, args, {
       cwd: binDir,
-      windowsHide: true
+      windowsHide: true,
+      env: {
+        ...process.env,
+        SDL_MOUSE_RELATIVE_SPEED_SCALE: mouseScale,
+        SDL_MOUSE_RELATIVE_SCALING: '1',
+        SDL_MOUSE_NORMAL_SPEED_SCALE: mouseScale
+      }
     });
 
     let lastErrorLines = [];

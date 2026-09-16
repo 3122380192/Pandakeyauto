@@ -119,6 +119,7 @@ const elSelDisplayBuffer = document.getElementById('selDisplayBuffer');
 const elSelMaxSize = document.getElementById('selMaxSize');
 const elSelBitrate = document.getElementById('selBitrate');
 const elSelRenderDriver = document.getElementById('selRenderDriver');
+const elSelMouseSpeed = document.getElementById('selMouseSpeed');
 const elChkMirrorScreen = document.getElementById('chkMirrorScreen');
 const elChkEnableControl = document.getElementById('chkEnableControl');
 const elChkUhidInput = document.getElementById('chkUhidInput');
@@ -315,6 +316,7 @@ async function startCurrentControl() {
     maxSize: parseInt(elSelMaxSize.value) || 1080,
     bitrate: elSelBitrate.value,
     renderDriver: elSelRenderDriver.value,
+    mouseSpeed: elSelMouseSpeed ? elSelMouseSpeed.value : '0.4',
     mirrorScreen: elChkMirrorScreen.checked,
     enableControl: elChkEnableControl ? elChkEnableControl.checked : true,
     uhidInput: elChkUhidInput ? elChkUhidInput.checked : true,
@@ -484,6 +486,7 @@ function updateModeDisplay() {
   if (activeMode.maxSize !== undefined) elSelMaxSize.value = String(activeMode.maxSize);
   if (activeMode.bitrate) elSelBitrate.value = activeMode.bitrate;
   if (activeMode.renderDriver) elSelRenderDriver.value = activeMode.renderDriver;
+  if (elSelMouseSpeed && activeMode.mouseSpeed) elSelMouseSpeed.value = String(activeMode.mouseSpeed);
 
   if (activeMode.mirrorScreen !== undefined) elChkMirrorScreen.checked = activeMode.mirrorScreen;
   if (elChkEnableControl && activeMode.enableControl !== undefined) elChkEnableControl.checked = !!activeMode.enableControl;
@@ -528,6 +531,7 @@ function handleTuningChange() {
     maxSize: parseInt(elSelMaxSize.value) || 0,
     bitrate: elSelBitrate.value,
     renderDriver: elSelRenderDriver.value,
+    mouseSpeed: elSelMouseSpeed ? elSelMouseSpeed.value : '0.4',
     mirrorScreen: elChkMirrorScreen.checked,
     enableControl: elChkEnableControl ? elChkEnableControl.checked : true,
     uhidInput: elChkUhidInput ? elChkUhidInput.checked : true,
@@ -542,8 +546,14 @@ function handleTuningChange() {
   updateFooterLog(`Đã cập nhật thông số cho chế độ: ${activeMode.name}`);
 }
 
-[elSelCodec, elSelFps, elSelDisplayBuffer, elSelMaxSize, elSelBitrate, elSelRenderDriver, elChkMirrorScreen, elChkEnableControl, elChkUhidInput, elChkTurnScreenOff, elChkForwardAudio, elChkStayAwake].filter(Boolean).forEach(input => {
-  input.addEventListener('change', handleTuningChange);
+[elSelCodec, elSelFps, elSelDisplayBuffer, elSelMaxSize, elSelBitrate, elSelRenderDriver, elSelMouseSpeed, elChkMirrorScreen, elChkEnableControl, elChkUhidInput, elChkTurnScreenOff, elChkForwardAudio, elChkStayAwake].filter(Boolean).forEach(input => {
+  input.addEventListener('change', () => {
+    handleTuningChange();
+    if (isControlling) {
+      updateFooterLog('⚡ Đang áp dụng thiết lập tối ưu mới vào phiên điều khiển...');
+      startCurrentControl();
+    }
+  });
 });
 
 // ================= GITHUB CLOUD SYNC =================
