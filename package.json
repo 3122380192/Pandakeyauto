@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "start:silent": "wscript \"Khởi Động Pandakeyauto.vbs\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

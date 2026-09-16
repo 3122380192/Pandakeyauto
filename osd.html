@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body, html {
+      background: transparent;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      pointer-events: none;
+    }
+    .hud-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(11, 15, 25, 0.94);
+      border: 1px solid rgba(56, 189, 248, 0.6);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 15px rgba(56, 189, 248, 0.35);
+      backdrop-filter: blur(12px);
+      padding: 8px 18px;
+      border-radius: 999px;
+      color: #f1f5f9;
+      transform: translateY(-80px);
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .hud-pill.show {
+      transform: translateY(12px);
+      opacity: 1;
+    }
+    .hud-icon {
+      font-size: 1.6rem;
+      filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8));
+    }
+    .hud-body {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .hud-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hud-game-name {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .hud-badge {
+      font-size: 0.65rem;
+      font-weight: 800;
+      background: #22c55e;
+      color: #052e16;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+    .hud-mode-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #facc15;
+    }
+    .hud-specs {
+      font-size: 0.7rem;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="hud-pill" id="hudPill">
+    <span class="hud-icon" id="hudIcon">🔥</span>
+    <div class="hud-body">
+      <div class="hud-title-row">
+        <span class="hud-game-name" id="hudGameName">FREE FIRE</span>
+        <span class="hud-badge" id="hudBadge">120 FPS</span>
+      </div>
+      <div class="hud-mode-name" id="hudModeName">Sinh Tồn Cực Gắt (0ms Trễ)</div>
+      <div class="hud-specs" id="hudSpecs">H.265 / HEVC • Đệm: 0ms • GPU D3D11</div>
+    </div>
+  </div>
+
+  <script>
+    let hideTimeout = null;
+    const pill = document.getElementById('hudPill');
+    const icon = document.getElementById('hudIcon');
+    const game = document.getElementById('hudGameName');
+    const badge = document.getElementById('hudBadge');
+    const mode = document.getElementById('hudModeName');
+    const specs = document.getElementById('hudSpecs');
+
+    window.displayHud = function(data) {
+      if (!data) return;
+      if (data.icon) icon.textContent = data.icon;
+      if (data.game) game.textContent = data.game;
+      if (data.badge) badge.textContent = data.badge;
+      if (data.mode) mode.textContent = data.mode;
+      if (data.specs) specs.textContent = data.specs;
+
+      pill.classList.add('show');
+
+      if (hideTimeout) clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(() => {
+        pill.classList.remove('show');
+      }, 2500);
+    };
+  </script>
+</body>
+</html>

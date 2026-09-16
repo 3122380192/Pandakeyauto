@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-app-region: no-drag;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    #crosshair-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    /* Các kiểu tâm ngắm SVG */
+    svg {
+      display: block;
+      filter: drop-shadow(0 0 2px rgba(0,0,0,0.8));
+    }
+  </style>
+</head>
+<body>
+  <div id="crosshair-container">
+    <svg id="crosshair-svg" width="64" height="64" viewBox="0 0 64 64"></svg>
+  </div>
+
+  <script>
+    const svg = document.getElementById('crosshair-svg');
+
+    function renderCrosshair(config) {
+      const type = config.type || 'cross';
+      const color = config.color || '#00ff66';
+      const size = parseInt(config.size) || 32;
+      const thickness = parseInt(config.thickness) || 2;
+      const gap = parseInt(config.gap) || 4;
+
+      svg.setAttribute('width', size * 2);
+      svg.setAttribute('height', size * 2);
+      svg.setAttribute('viewBox', `0 0 ${size * 2} ${size * 2}`);
+
+      const center = size;
+      let innerHTML = '';
+
+      if (type === 'dot') {
+        // Red dot / Dot tâm ngắm
+        innerHTML = `<circle cx="${center}" cy="${center}" r="${thickness + 1}" fill="${color}" stroke="#000" stroke-width="0.8" />`;
+      } else if (type === 'circle-dot') {
+        // Vòng tròn + chấm tâm ngắm
+        const r = gap + 6;
+        innerHTML = `
+          <circle cx="${center}" cy="${center}" r="${r}" fill="none" stroke="${color}" stroke-width="${thickness}" stroke-dasharray="8 3" opacity="0.85" />
+          <circle cx="${center}" cy="${center}" r="${thickness}" fill="${color}" stroke="#000" stroke-width="0.6" />
+        `;
+      } else if (type === 't-cross') {
+        // Dấu T không che đỉnh
+        innerHTML = `
+          <!-- Trái -->
+          <line x1="${center - gap - 8}" y1="${center}" x2="${center - gap}" y2="${center}" stroke="${color}" stroke-width="${thickness}" stroke-linecap="round" />
+          <!-- Phải -->
+          <line x1="${center + gap}" y1="${center}" x2="${center + gap + 8}" y2="${center}" stroke="${color}" stroke-width="${thickness}" stroke-linecap="round" />
+          <!-- Dưới -->
+          <line x1="${center}" y1="${center + gap}" x2="${center}" y2="${center + gap + 8}" stroke="${color}" stroke-width="${thickness}" stroke-linecap="round" />
+          <!-- Chấm giữa -->
+          <circle cx="${center}" cy="${center}" r="1.5" fill="${color}" />
+        `;
+      } else {
+        // Dấu cộng CS:GO / Valorant Classic
+        innerHTML = `
+          <!-- Trên -->
+          <line x1="${center}" y1="${center - gap - 8}" x2="${center}" y2="${center - gap}" stroke="${color}" stroke-width="${thickness}" stroke-linecap="round" />
+          <!-- Dưới -->
+          <line x1="${center}" y1="${center + gap}" x2="${center}" y2="${center + gap + 8}" stroke="${color}" stroke-width="${thickness}" stroke-linecap="round" />
+          <!-- Trái -->
+          <line x1="${center - gap - 8}" y1="${center}" x2="${center - gap}" y2="${center}" stroke="${color}" stroke-width="${thickness}" stroke-linecap="round" />
+          <!-- Phải -->
+          <line x1="${center + gap}" y1="${center}" x2="${center + gap + 8}" stroke="${color}" stroke-width="${thickness}" stroke-linecap="round" />
+          <!-- Chấm giữa -->
+          <circle cx="${center}" cy="${center}" r="1.2" fill="${color}" />
+        `;
+      }
+
+      svg.innerHTML = innerHTML;
+    }
+
+    // Lắng nghe cấu hình từ Electron
+    if (window.electronAPI && window.electronAPI.onUpdateCrosshair) {
+      window.electronAPI.onUpdateCrosshair((config) => {
+        renderCrosshair(config);
+      });
+    } else {
+      // Mặc định
+      renderCrosshair({ type: 'cross', color: '#00ff66', size: 30, thickness: 2, gap: 5 });
+    }
+  </script>
+</body>
+</html>

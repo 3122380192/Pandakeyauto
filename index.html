@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>APKRemote Pro - Điều Khiển Điện Thoại Chơi Game</title>
+  <title>Pandakeyauto Pro - Điều Khiển Điện Thoại Chơi Game & Đồng Bộ Cloud</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
@@ -15,196 +15,494 @@
     <header class="header">
       <div class="logo">
         <span class="logo-icon">🎮</span>
-        <div>
-          <h1>APKRemote Pro</h1>
-          <p class="subtitle">Điều khiển Android & iPhone bằng chuột & phím PC</p>
+        <div class="logo-text">
+          <h1>PANDAKEY <span class="version-tag">VIP v2.0</span></h1>
+          <p class="subtitle">0ms Latency • Scrcpy 3.1 • GitHub Cloud</p>
         </div>
       </div>
-      <div class="device-pill" id="devicePill">
-        <span class="dot" id="statusDot"></span>
-        <span id="deviceText">Đang tìm điện thoại...</span>
+
+      <div class="header-right">
+        <select id="selDeviceList" class="device-select" title="Chọn thiết bị điều khiển">
+          <option value="">Đang tìm thiết bị...</option>
+        </select>
+        <button class="btn-icon-hdr" id="btnRefresh" title="Quét lại cổng kết nối USB">🔄</button>
+        <div class="device-pill" id="devicePill">
+          <span class="dot" id="statusDot"></span>
+          <span id="deviceText">Đang tìm điện thoại...</span>
+        </div>
       </div>
     </header>
 
-    <!-- 3 Tabs Tách Biệt Rõ Ràng -->
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="tabGame">🤖 1. Android & Chơi Game</button>
-      <button class="tab-btn" data-tab="tabApple">🍎 2. iPhone / iPad (iOS)</button>
-      <button class="tab-btn" data-tab="tabFeatures">⚙️ 3. Tiện Ích & Mẹo Chống Sếp</button>
-    </div>
+    <!-- 5 Tabs Hiện Đại -->
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="tabGame">
+        <span class="tab-icon">🎮</span> <span>Chiến Game</span>
+      </button>
+      <button class="tab-btn" data-tab="tabVip">
+        <span class="tab-icon">🎯</span> <span>VIP Trợ Năng</span>
+      </button>
+      <button class="tab-btn" data-tab="tabProfiles">
+        <span class="tab-icon">☁️</span> <span>Cloud & Hồ Sơ</span>
+      </button>
+      <button class="tab-btn" data-tab="tabFeatures">
+        <span class="tab-icon">⚙️</span> <span>Tiện Ích & Phím Tắt</span>
+      </button>
+      <button class="tab-btn" data-tab="tabApple">
+        <span class="tab-icon">🍎</span> <span>iOS (iPhone/iPad)</span>
+      </button>
+    </nav>
 
-    <!-- ================= TAB 1: ANDROID & CHƠI GAME ================= -->
+    <!-- ================= TAB 1: CHIẾN GAME (MAIN HUB) ================= -->
     <section class="tab-content active" id="tabGame">
-      <!-- Nút Bật / Tắt To Nổi Bật -->
-      <div class="action-box">
-        <button class="btn-main" id="btnToggleControl">
-          <span class="btn-icon">⚡</span>
-          <div>
-            <strong id="btnToggleTitle">BẬT ĐIỀU KHIỂN</strong>
-            <small id="btnToggleSub">Phím tắt nhanh: Ctrl + Alt + K | Đổi chuột: Alt + 3</small>
+      
+      <!-- HỘP CHỌN PROFILE GAME -->
+      <div class="profile-select-card">
+        <div class="profile-header-row">
+          <div class="profile-header-left">
+            <span class="card-label">🔥 PROFILE GAME</span>
+            <span class="profile-category-badge" id="lblProfileCategory">FPS / Battle Royale</span>
           </div>
-        </button>
-        <button class="btn-stop" id="btnStop" disabled>DỪNG</button>
+          <button class="btn-add-game" id="btnToggleAddGame">➕ Thêm Game</button>
+        </div>
+
+        <!-- Form Thêm Game Mới -->
+        <div class="add-game-box" id="addGameBox" style="display: none;">
+          <div class="add-game-header">
+            <h4>➕ Tạo Profile Game Mới</h4>
+            <button class="btn-close-box" id="btnCloseAddGame">✕</button>
+          </div>
+          <div class="add-game-inputs">
+            <input type="text" id="txtNewGameName" placeholder="Tên Game (VD: Warzone, FIFA, Roblox...)">
+            <input type="text" id="txtNewGameIcon" placeholder="Icon (VD: 🔫, 🏎️, 🧙)" style="max-width: 100px;">
+            <select id="selNewGameCat" class="select-modern" style="max-width: 140px;">
+              <option value="Chiến Thuật / FPS">Chiến Thuật / FPS</option>
+              <option value="FPS / Bắn Súng">FPS / Bắn Súng</option>
+              <option value="MOBA / Đối Kháng">MOBA / Đối Kháng</option>
+              <option value="Sinh Tồn">Sinh Tồn</option>
+              <option value="Nhập Vai / RPG">Nhập Vai / RPG</option>
+              <option value="Tùy Chỉnh">Tùy Chỉnh</option>
+            </select>
+            <button class="btn-action btn-glow-action" id="btnConfirmAddGame">✔ Lưu Game</button>
+          </div>
+        </div>
+
+        <div class="game-selector-grid" id="gameSelectorGrid">
+          <!-- Render bởi JavaScript -->
+        </div>
       </div>
 
-      <!-- BOSS KEY & LOCK BANNER: Phím Tắt Khẩn Cấp -->
-      <div class="boss-key-card">
-        <div class="boss-badge">🚨 PHÍM TẮT KHẨN CẤP CHỐNG SẾP (DUAL BOSS KEY)</div>
-        <div class="boss-content">
-          <div class="boss-item-row">
-            <span class="kbd">Alt + X</span>
-            <div>
-              <strong>Tắt đèn màn hình (Không khóa máy) & Ẩn cửa sổ PC</strong>
-              <small>Màn hình điện thoại đen sì nhưng game/combat vẫn chạy ngầm không bị ngắt kết nối.</small>
+      <!-- BỘ ĐIỀU KHIỂN CHẾ ĐỘ CHƠI (GAME MODE CONTROLLER) -->
+      <div class="mode-control-card">
+        <div class="mode-nav-row">
+          <button class="btn-mode-arrow" id="btnPrevMode" title="Chế độ trước (Alt + Left)">
+            ◀ <span class="kbd-mini">Alt+Left</span>
+          </button>
+          
+          <div class="mode-info-box" id="modeInfoBox">
+            <div class="mode-title-row">
+              <span class="mode-icon" id="lblModeIcon">⚡</span>
+              <strong class="mode-name" id="lblModeName">Chiến Trường Tác Chiến (120 FPS, 0ms Delay)</strong>
+              <span class="mode-tag" id="lblModeTag">Thi Đấu 0ms</span>
+            </div>
+            <p class="mode-desc" id="lblModeDesc">Tối ưu tối đa tốc độ phản xạ và ghìm tâm súng, loại bỏ hoàn toàn đệm hình ảnh.</p>
+            <div class="mode-specs-row" id="modeSpecsRow">
+              <span class="spec-badge spec-fps" id="badgeFps">120 FPS</span>
+              <span class="spec-badge spec-codec" id="badgeCodec">H.265</span>
+              <span class="spec-badge spec-buffer" id="badgeBuffer">Đệm: 0ms</span>
+              <span class="spec-badge spec-bitrate" id="badgeBitrate">16 Mbps</span>
+              <span class="spec-badge spec-size" id="badgeSize">1080p</span>
             </div>
           </div>
-          <div class="boss-item-row" style="margin-top: 6px;">
-            <span class="kbd">Alt + Z</span>
-            <div>
-              <strong>Khóa màn hình điện thoại ngay lập tức (Lock Screen)</strong>
-              <small>Bấm nút nguồn ảo khóa hẳn màn hình điện thoại, thu nhỏ cửa sổ và nhả chuột về PC ngay lập tức.</small>
-            </div>
+
+          <button class="btn-mode-arrow" id="btnNextMode" title="Chế độ tiếp theo (Alt + Right)">
+            <span class="kbd-mini">Alt+Right</span> ▶
+          </button>
+        </div>
+      </div>
+
+      <!-- DUAL MASTER ACTION BUTTONS (BẮT ĐẦU VÀ DỪNG LẠI) -->
+      <div class="action-box-dual">
+        <button class="btn-mirror-start" id="btnStartMirror">
+          <span class="btn-icon-pulse">▶</span>
+          <div class="btn-mirror-content">
+            <strong id="btnMirrorTitle">BẮT ĐẦU CHIẾU MÀN HÌNH</strong>
+            <small id="btnMirrorSub">Chiếu lên PC & Tương tác chuột phím (F1 / Alt+3: Đổi Chuột)</small>
           </div>
+        </button>
+
+        <button class="btn-mirror-stop" id="btnStopMirror" disabled>
+          <span class="btn-icon-stop">⏹</span>
+          <div class="btn-mirror-content">
+            <strong>DỪNG LẠI</strong>
+            <small id="btnStopSub">Nhả chuột & Đóng phiên</small>
+          </div>
+        </button>
+      </div>
+
+      <!-- QUICK SHORTCUTS MINI-HUD -->
+      <div class="boss-hotkeys-bar">
+        <div class="hotkey-chip"><span class="kbd">Alt+Left/Right</span> Chuyển Chế Độ</div>
+        <div class="hotkey-chip"><span class="kbd">F1 / Alt+3</span> Đổi Chuột PC ⇋ ĐT</div>
+        <div class="hotkey-chip"><span class="kbd">Alt+X</span> Boss Key (Ẩn Gấp)</div>
+        <div class="hotkey-chip"><span class="kbd">Alt+Z</span> Khóa Màn ĐT</div>
+      </div>
+
+      <!-- TINH CHỈNH TỐI ƯU HÌNH ẢNH & ĐỘ TRỄ NÂNG CAO -->
+      <div class="settings-group">
+        <div class="section-header-flex">
+          <h3 class="section-title">⚙️ Tinh Chỉnh Thông Số & Tín Hiệu</h3>
+          <span class="section-sub-tip">Tự động lưu vào Profile</span>
+        </div>
+        
+        <div class="tuning-grid">
+          <!-- Video Codec -->
+          <div class="tuning-item">
+            <label for="selCodec">Bộ Mã Hóa (Codec):</label>
+            <select id="selCodec" class="select-modern">
+              <option value="h265" selected>H.265 / HEVC (Siêu Nhẹ, Đề Xuất)</option>
+              <option value="h264">H.264 (Tương Thích Mọi Máy)</option>
+              <option value="av1">AV1 (Nén Cao Cấp)</option>
+            </select>
+          </div>
+
+          <!-- Max FPS -->
+          <div class="tuning-item">
+            <label for="selFps">Khung Hình (FPS):</label>
+            <select id="selFps" class="select-modern">
+              <option value="120" selected>120 FPS (Phản Xạ Cực Nhanh)</option>
+              <option value="90">90 FPS (Mượt Mà Ổn Định)</option>
+              <option value="60">60 FPS (Chuẩn Mặc Định)</option>
+              <option value="30">30 FPS (Tiết Kiệm Pin)</option>
+            </select>
+          </div>
+
+          <!-- Video Buffer -->
+          <div class="tuning-item">
+            <label for="selDisplayBuffer">Bộ Đệm Độ Trễ (Buffer):</label>
+            <select id="selDisplayBuffer" class="select-modern">
+              <option value="0" selected>0 ms (Zero Delay Tức Thì)</option>
+              <option value="10">10 ms (Cực Thấp Chống Giật)</option>
+              <option value="25">25 ms (Ổn Định Cho Wi-Fi)</option>
+              <option value="50">50 ms (Mạng Chậm / Yếu)</option>
+            </select>
+          </div>
+
+          <!-- Max Size (Độ Phân Giải) -->
+          <div class="tuning-item">
+            <label for="selMaxSize">Độ Phân Giải Tối Đa:</label>
+            <select id="selMaxSize" class="select-modern">
+              <option value="1080" selected>1080p Full HD (Chuẩn Nét)</option>
+              <option value="1440">1440p / 2K (Siêu Nét Màn PC)</option>
+              <option value="720">720p HD (Tối Ưu Tốc Độ)</option>
+              <option value="0">Gốc Điện Thoại (Native)</option>
+            </select>
+          </div>
+
+          <!-- Bitrate -->
+          <div class="tuning-item">
+            <label for="selBitrate">Băng Thông Video (Bitrate):</label>
+            <select id="selBitrate" class="select-modern">
+              <option value="16M" selected>16 Mbps (Nét Căng Mặc Định)</option>
+              <option value="24M">24 Mbps (Đồ Họa Cao Cấp)</option>
+              <option value="12M">12 Mbps (Cân Bằng Mượt)</option>
+              <option value="8M">8 Mbps (Mạng Yếu / Treo Máy)</option>
+            </select>
+          </div>
+
+          <!-- Render Engine -->
+          <div class="tuning-item">
+            <label for="selRenderDriver">Bộ Dựng Hình (GPU Engine):</label>
+            <select id="selRenderDriver" class="select-modern">
+              <option value="direct3d11" selected>Direct3D 11 (GPU Windows Tối Ưu)</option>
+              <option value="opengl">OpenGL</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Checkbox Options Tối Ưu -->
+        <div class="checkbox-row-container">
+          <label class="checkbox-row highlight-check">
+            <input type="checkbox" id="chkMirrorScreen" checked>
+            <div class="check-text">
+              <strong>Chiếu màn hình điện thoại lên máy tính (Cửa sổ tương tác)</strong>
+              <small>Bỏ tích nếu chỉ muốn điều khiển thẳng trên màn hình thật của điện thoại để đạt 0% CPU.</small>
+            </div>
+          </label>
+
+          <label class="checkbox-row highlight-check">
+            <input type="checkbox" id="chkEnableControl" checked>
+            <div class="check-text">
+              <strong>Cho phép chuột & bàn phím máy tính điều khiển điện thoại</strong>
+              <small>Bấm chuột và gõ phím vào game. Bỏ tích nếu chỉ muốn xem hình (View-Only) và bấm tay trên điện thoại.</small>
+            </div>
+          </label>
+
+          <label class="checkbox-row highlight-check">
+            <input type="checkbox" id="chkUhidInput" checked>
+            <div class="check-text">
+              <strong>Chế độ chuột & phím phần cứng UHID (Khắc phục Vivo / Xiaomi chặn)</strong>
+              <small>Giả lập chuột & phím USB trực tiếp qua Linux kernel, không bị lớp bảo mật Android chặn.</small>
+            </div>
+          </label>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="chkTurnScreenOff">
+            <div class="check-text">
+              <strong>Tắt màn hình điện thoại khi chiếu lên máy tính (Tiết kiệm pin & Mát máy)</strong>
+              <small>Màn hình thật sẽ tối lại để chống nóng máy. Bỏ tích nếu bạn muốn bấm ngón tay trên màn hình điện thoại.</small>
+            </div>
+          </label>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="chkForwardAudio" checked>
+            <div class="check-text">
+              <strong>Truyền âm thanh game sang PC (Low Latency 10ms)</strong>
+              <small>Nghe rõ tiếng bước chân kẻ địch qua tai nghe máy tính.</small>
+            </div>
+          </label>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="chkStayAwake" checked>
+            <div class="check-text">
+              <strong>Giữ điện thoại luôn thức khi cắm cáp</strong>
+              <small>Không bị tắt nguồn hoặc khóa máy khi đang combat.</small>
+            </div>
+          </label>
         </div>
       </div>
 
       <!-- Khu vực Panda Mouse Pro Keymapper -->
       <div class="panda-card">
-        <div class="panda-header">
+        <div class="panda-left">
           <span class="panda-badge">🐼 PANDA MOUSE PRO</span>
-          <strong>Kích Hoạt Keymapping Chơi Game Mobile</strong>
+          <p class="panda-desc">Kích hoạt keymapping WASD, ngắm bắn chuột trên game mobile qua lệnh 1-Click.</p>
         </div>
-        <p class="panda-desc">
-          Điện thoại bạn <strong>đã có sẵn app Panda Mouse Pro</strong>! Bấm nút bên dưới để app tự động kích hoạt (Active) qua ADB mà không cần chạy lệnh thủ công. Sau đó mở Panda trên điện thoại để gán nút WASD, ngắm bắn, skill tùy ý.
-        </p>
         <button class="btn-panda" id="btnActivatePanda">
-          🚀 BẤM ĐỂ KÍCH HOẠT PANDA MOUSE (1-CLICK ACTIVATE)
+          🚀 KÍCH HOẠT PANDA (1-CLICK)
         </button>
       </div>
 
-      <!-- Hướng dẫn phím tắt chuyển đổi chuột -->
-      <div class="tip-card">
-        <div class="tip-row">
-          <span class="step-badge">🔥</span>
-          <p>Bấm <span class="kbd">Alt + 3</span> để <strong>chuyển đổi chuột phím qua lại 2 chiều</strong> giữa Điện Thoại và Máy Tính tức thì!</p>
-        </div>
-        <div class="tip-row">
-          <span class="step-badge">✨</span>
-          <p>Phím <span class="kbd">Alt Trái</span> vẫn giữ nguyên: Nhả chuột quay về máy tính bất cứ lúc nào.</p>
-        </div>
-      </div>
-
-      <!-- Tùy Chọn Hiển Thị: TÍCH VÀO LÀ ĂN NGAY LẬP TỨC -->
-      <div class="settings-group">
-        <h3 class="section-title">Tùy Chọn Hiển Thị (Tự Động Áp Dụng Ngay Lập Tức)</h3>
-        <label class="checkbox-row highlight-check">
-          <input type="checkbox" id="chkMirrorScreen">
-          <div class="check-text">
-            <strong>Chiếu màn hình điện thoại lên máy tính (Tương tác như màn hình PC)</strong>
-            <small>Tích vào là hiện ngay cửa sổ màn hình điện thoại, tương tác trực tiếp bằng chuột và phím</small>
-          </div>
-        </label>
-        <label class="checkbox-row">
-          <input type="checkbox" id="chkForwardAudio" checked>
-          <div class="check-text">
-            <strong>Phát âm thanh game qua máy tính</strong>
-            <small>Nghe tiếng game qua tai nghe hoặc loa PC</small>
-          </div>
-        </label>
-        <label class="checkbox-row">
-          <input type="checkbox" id="chkStayAwake" checked>
-          <div class="check-text">
-            <strong>Giữ màn hình điện thoại luôn sáng</strong>
-            <small>Không bị tắt màn hình khi đang combat</small>
-          </div>
-        </label>
-      </div>
-
-      <!-- Bảng Phím Tắt Tóm Tắt Gọn Gàng -->
-      <div class="hotkey-summary">
-        <h3 class="section-title">Bảng Phím Tắt Nhanh</h3>
-        <div class="hotkey-grid">
-          <div class="hotkey-item highlight-boss"><span class="kbd">Alt + Z</span> <strong>Khóa màn hình điện thoại</strong></div>
-          <div class="hotkey-item highlight-boss"><span class="kbd">Alt + X</span> <strong>Tắt màn ĐT (Không khóa)</strong></div>
-          <div class="hotkey-item"><span class="kbd">Alt + 3</span> Chuyển chuột PC ⇋ Điện thoại</div>
-          <div class="hotkey-item"><span class="kbd">Ctrl + Alt + K</span> Bật / Tắt điều khiển</div>
-          <div class="hotkey-item"><span class="kbd">Alt Trái</span> Nhả chuột về máy tính</div>
-          <div class="hotkey-item"><span class="kbd">Chuột Phải</span> Nút Quay Lại (Back)</div>
-        </div>
-      </div>
     </section>
 
-    <!-- ================= TAB 2: IPHONE / IPAD (IOS) ================= -->
-    <section class="tab-content" id="tabApple">
-      <div class="apple-card">
-        <div class="apple-header">
-          <span class="apple-icon">🍎</span>
+    <!-- ================= TAB 2: VIP TRỢ NĂNG & TÂM NGẮM ================= -->
+    <section class="tab-content" id="tabVip">
+      
+      <div class="vip-layout-grid">
+        <!-- Cột Trái: Tâm Ngắm Ảo VIP -->
+        <div class="vip-card">
+          <div class="vip-header">
+            <span class="vip-icon">🎯</span>
+            <div>
+              <h3>TÂM NGẮM ẢO GAMING (CROSSHAIR HUD)</h3>
+              <p class="vip-sub">Tâm ngắm nổi đè lên game, chuột bấm xuyên thấu 100%, hỗ trợ sấy Free Fire / PUBG không cần mở scope!</p>
+            </div>
+          </div>
+
+          <div class="crosshair-control-panel">
+            <div class="crosshair-toggle-row">
+              <button class="btn-crosshair-toggle" id="btnToggleCrosshair">
+                🎯 BẬT TÂM NGẮM ẢO TRÊN MÀN HÌNH
+              </button>
+              <span class="crosshair-status-text" id="crosshairStatusText">Đang tắt</span>
+            </div>
+
+            <div class="crosshair-designer-grid">
+              <!-- Preview Box -->
+              <div class="crosshair-preview-box">
+                <span class="preview-label">Xem Trước</span>
+                <div class="preview-area" id="crosshairPreviewArea">
+                  <svg id="previewCrosshairSvg" width="64" height="64" viewBox="0 0 64 64"></svg>
+                </div>
+              </div>
+
+              <!-- Cài đặt thông số -->
+              <div class="crosshair-settings-col">
+                <div class="vip-form-item">
+                  <label>Kiểu Tâm Ngắm:</label>
+                  <div class="crosshair-type-buttons">
+                    <button class="btn-type-opt active" data-type="cross">+</button>
+                    <button class="btn-type-opt" data-type="dot">•</button>
+                    <button class="btn-type-opt" data-type="circle-dot">⨁</button>
+                    <button class="btn-type-opt" data-type="t-cross">⊤</button>
+                  </div>
+                </div>
+
+                <div class="vip-form-item">
+                  <label>Màu Sắc:</label>
+                  <div class="color-palette-row">
+                    <span class="color-dot active" data-color="#00ff66" style="background: #00ff66;" title="Xanh Lá Neon"></span>
+                    <span class="color-dot" data-color="#ff3366" style="background: #ff3366;" title="Đỏ Neon"></span>
+                    <span class="color-dot" data-color="#ffee00" style="background: #ffee00;" title="Vàng Chanh"></span>
+                    <span class="color-dot" data-color="#00e5ff" style="background: #00e5ff;" title="Xanh Ngọc"></span>
+                    <span class="color-dot" data-color="#ffffff" style="background: #ffffff;" title="Trắng"></span>
+                  </div>
+                </div>
+
+                <div class="vip-form-item">
+                  <label for="rngCrosshairSize">Kích Thước: <span id="lblCrosshairSize">30px</span></label>
+                  <input type="range" id="rngCrosshairSize" min="16" max="50" value="30">
+                </div>
+
+                <div class="vip-form-item">
+                  <label for="rngCrosshairGap">Khoảng Hở: <span id="lblCrosshairGap">5px</span></label>
+                  <input type="range" id="rngCrosshairGap" min="0" max="15" value="5">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cột Phải: Game Booster, Tản Nhiệt, Rapid Fire -->
+        <div class="vip-tools-col">
+          <!-- 🚀 1-CLICK GAME BOOSTER -->
+          <div class="booster-card">
+            <div class="booster-header">
+              <span class="booster-icon">🚀</span>
+              <div>
+                <h4>1-CLICK GAME BOOSTER</h4>
+                <p class="booster-sub">Tắt hiệu ứng hệ thống Android (0x) để đạt phản xạ tức thì 0ms.</p>
+              </div>
+            </div>
+            <div class="booster-action-row">
+              <button class="btn-booster-action" id="btnBoostDevice">⚡ KÍCH HOẠT TĂNG TỐC</button>
+              <button class="btn-action btn-outline-sm" id="btnRestoreAnim">Khôi Phục (1.0x)</button>
+            </div>
+          </div>
+
+          <!-- 🔫 RAPID FIRE MACRO -->
+          <div class="rapid-card">
+            <div class="rapid-header">
+              <span class="rapid-icon">🔫</span>
+              <div>
+                <h4>RAPID FIRE MACRO (AUTO TAP)</h4>
+                <p class="rapid-sub">Sấy đạn liên thanh cho súng gõ từng viên (SKS, SLR, M14, Mini14).</p>
+              </div>
+            </div>
+            <div class="rapid-control-row">
+              <button class="btn-rapid-toggle" id="btnToggleRapidFire">🔫 BẬT RAPID FIRE</button>
+              <div class="rapid-speed-select">
+                <select id="selRapidCps" class="select-modern">
+                  <option value="12">12 CPS</option>
+                  <option value="16" selected>16 CPS (Chuẩn)</option>
+                  <option value="20">20 CPS</option>
+                  <option value="25">25 CPS (Cực Đại)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- ❄️ TẢN NHIỆT MÁT MÁY -->
+          <div class="cooler-card">
+            <div class="cooler-header">
+              <span class="cooler-icon">❄️</span>
+              <div>
+                <h4>CHẾ ĐỘ TẢN NHIỆT PIN (COOLER)</h4>
+                <p class="cooler-sub">Hạ độ sáng màn hình thật về 0 để máy mát lạnh không hạ xung.</p>
+              </div>
+            </div>
+            <div class="cooler-action-row">
+              <button class="btn-cooler-toggle" id="btnToggleCooler">❄️ BẬT TẢN NHIỆT</button>
+              <span class="cooler-status-badge" id="coolerStatusBadge">Đang bình thường</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= TAB 3: CLOUD & PROFILE ================= -->
+    <section class="tab-content" id="tabProfiles">
+      
+      <!-- Hướng dẫn & Cấu hình GitHub Gist -->
+      <div class="github-sync-card">
+        <div class="github-header">
+          <div class="github-icon-box">☁️</div>
           <div>
-            <h3>KẾT NỐI & ĐIỀU KHIỂN IPHONE / IPAD (APPLE iOS)</h3>
-            <span class="apple-status-text" id="appleStatus">Đang kiểm tra thiết bị Apple cắm qua USB...</span>
+            <h3>ĐỒNG BỘ PROFILE LÊN GITHUB CLOUD (GIST)</h3>
+            <p class="github-sub">Sử dụng mọi cấu hình ở bất kỳ máy tính nào (ở nhà hoặc ngoài quán net).</p>
+          </div>
+        </div>
+
+        <div class="github-form">
+          <div class="form-group">
+            <label for="txtGithubToken">GitHub Personal Access Token (PAT):</label>
+            <div class="input-with-action">
+              <input type="password" id="txtGithubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx (Cần quyền: gist)">
+              <button class="btn-small" id="btnToggleTokenVisibility">👁️</button>
+            </div>
+            <small class="form-help">
+              Tạo Token tại: <strong>github.com > Settings > Developer settings > Personal access tokens (classic)</strong> (Tích chọn quyền <code>gist</code>).
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="txtGithubGistId">Gist ID (Để trống nếu muốn tạo Gist mới):</label>
+            <input type="text" id="txtGithubGistId" placeholder="Ví dụ: 7a8b9c0d1e2f3a4b... (Tự động điền khi Upload)">
+          </div>
+
+          <div class="github-buttons-row">
+            <button class="btn-sync-up" id="btnSyncUpload">
+              ⬆️ ĐẨY LÊN CLOUD (UPLOAD)
+            </button>
+            <button class="btn-sync-down" id="btnSyncDownload">
+              ⬇️ TẢI VỀ TỪ CLOUD (DOWNLOAD)
+            </button>
           </div>
         </div>
       </div>
 
+      <!-- Backup JSON Offline -->
       <div class="settings-group">
-        <h3 class="section-title">1. Cắm Cáp Lightning / Type-C</h3>
-        <div class="ios-steps">
-          <p>• <strong>Bước 1:</strong> Dùng cáp cắm iPhone vào cổng USB máy tính.</p>
-          <p>• <strong>Bước 2:</strong> Mở khóa màn hình iPhone, bấm <strong>"Tin cậy máy tính này" (Trust This Computer)</strong> và nhập mật mã iPhone.</p>
-          <p>• <strong>Bước 3:</strong> Máy tính sẽ tự động nhận diện thiết bị Apple ở chế độ đồng bộ dữ liệu.</p>
+        <h3 class="section-title">💾 Sao Lưu & Khôi Phục Hồ Sơ Offline (JSON)</h3>
+        <p class="backup-desc">Chia sẻ nhanh profile qua file JSON khi không có mạng.</p>
+        <div class="backup-actions-row">
+          <button class="btn-action btn-outline" id="btnExportJson">📋 Sao Chép JSON</button>
+          <button class="btn-action btn-outline" id="btnSaveJsonFile">📁 Lưu profiles.json</button>
+        </div>
+        <div class="import-box" style="margin-top: 8px;">
+          <textarea id="txtImportJson" placeholder="Dán nội dung JSON vào đây để khôi phục..."></textarea>
+          <button class="btn-action" id="btnImportJson">📥 Khôi Phục Profiles Từ JSON</button>
         </div>
       </div>
 
+      <!-- Danh Sách Toàn Bộ Profile Hiện Có -->
       <div class="settings-group">
-        <h3 class="section-title">2. Chiếu Màn Hình Không Dây Qua AirPlay (Chơi Game Cực Nét)</h3>
-        <div class="ios-steps">
-          <p>• Kết nối iPhone và PC vào <strong>chung 1 mạng Wi-Fi</strong> (hoặc iPhone phát Hotspot cho PC).</p>
-          <p>• Vuốt góc phải trên màn hình iPhone xuống để mở Trung tâm điều khiển > Chạm vào <strong>"Phản chiếu màn hình" (Screen Mirroring)</strong>.</p>
-          <p>• Toàn bộ hình ảnh và âm thanh game iPhone sẽ truyền thẳng lên PC với chất lượng Retina cực đẹp!</p>
+        <h3 class="section-title">📂 Danh Sách Profiles Trong Ứng Dụng</h3>
+        <div class="profile-list-overview" id="profileListOverview">
+          <!-- Render tự động bởi JS -->
         </div>
       </div>
 
-      <div class="settings-group">
-        <h3 class="section-title">3. Bật Con Trỏ Chuột Trên iPhone (AssistiveTouch)</h3>
-        <div class="ios-steps">
-          <p>Trên iPhone, vào <strong>Cài đặt > Trợ năng > Cảm ứng > Bật "AssistiveTouch"</strong>.</p>
-          <p>Con trỏ chuột tròn đặc trưng của iOS sẽ xuất hiện để bạn rê chuột điều khiển trực tiếp!</p>
-        </div>
-      </div>
     </section>
 
-    <!-- ================= TAB 3: TIỆN ÍCH & MẸO CHỐNG SẾP ================= -->
+    <!-- ================= TAB 4: TIỆN ÍCH & PHÍM TẮT ================= -->
     <section class="tab-content" id="tabFeatures">
       <div class="settings-group">
-        <h3 class="section-title">🕵️ CÁC MẸO "TÀNG HÌNH" CHƠI GAME KHÔNG LO SẾP THẤY</h3>
+        <h3 class="section-title">🕵️ Mẹo Phím Tắt Tàng Hình (Chống Sếp & Khẩn Cấp)</h3>
         <div class="stealth-tips">
           <div class="tip-box">
-            <strong>1. Bộ Đôi Phím Tắt Khẩn Cấp (Alt+X & Alt+Z):</strong>
-            <p>• Muốn tắt đen màn hình điện thoại nhưng <em>game vẫn chạy ngầm bên trong</em>: Bấm <strong>Alt + X</strong>.</p>
-            <p>• Muốn <em>khóa hẳn màn hình điện thoại</em> (như vừa bấm nút nguồn xong): Bấm <strong>Alt + Z</strong>.</p>
+            <strong>1. Phím Tắt Khẩn Cấp (Alt+X & Alt+Z):</strong>
+            <p>• <strong>Alt + X (Boss Key)</strong>: Tắt màn hình điện thoại và thu nhỏ ngay cửa sổ game PC. Bấm lại Alt+X để khôi phục.</p>
+            <p>• <strong>Alt + Z (Khóa Máy)</strong>: Khóa màn hình điện thoại như vừa nhấn nút nguồn vật lý.</p>
           </div>
           <div class="tip-box">
-            <strong>2. Mẹo Đặt Điện Thoại & Góc Nhìn (Góc Chết):</strong>
-            <p>Đặt điện thoại tựa sát vào chân đế của màn hình máy tính (ngay bên dưới mép dưới màn hình) và cắm dây sạc USB. Người ngoài nhìn từ phía sau hoặc đi lướt qua sẽ đinh ninh bạn đang cắm sạc điện thoại và mắt nhìn vào màn hình làm việc.</p>
-          </div>
-          <div class="tip-box">
-            <strong>3. Phím Tắt Đổi Desktop Ảo (Windows + Ctrl + Mũi tên):</strong>
-            <p>Tạo Virtual Desktop thứ 2 (Desktop ảo sạch sẽ chỉ có Word/Excel). Khi sếp đến gần, bấm <strong>Ctrl + Windows + Mũi tên</strong> để bay sang màn hình làm việc trong 0.05 giây!</p>
+            <strong>2. Chuyển Đổi Desktop Ảo (Windows + Ctrl + Mũi tên):</strong>
+            <p>Tạo Virtual Desktop thứ 2 sạch sẽ chỉ có tài liệu làm việc. Khi cần, nhấn <strong>Ctrl + Win + Mũi tên</strong> để chuyển desktop trong 0.05 giây.</p>
           </div>
         </div>
       </div>
 
-      <!-- Tiện ích Mới: Gõ Chữ & Chụp Ảnh Màn Hình -->
+      <!-- Tiện ích: Gõ Chữ & Chụp Ảnh Màn Hình -->
       <div class="settings-group">
-        <h3 class="section-title">🚀 Tiện Ích Đồng Bộ Văn Bản, Mở Link & Chụp Màn Hình</h3>
+        <h3 class="section-title">🚀 Tiện Ích Văn Bản, Link & Chụp Màn Hình</h3>
         <div class="text-sync-box">
-          <input type="text" id="txtSendText" placeholder="Nhập văn bản từ máy tính để dán vào điện thoại...">
+          <input type="text" id="txtSendText" placeholder="Nhập văn bản PC dán vào điện thoại...">
           <button class="btn-action" id="btnSendText">Gửi Vào Máy</button>
           <button class="btn-action btn-outline" id="btnScreenshot">📸 Chụp Ảnh ĐT</button>
         </div>
         <div class="text-sync-box" style="margin-top: 8px;">
-          <input type="text" id="txtUrl" placeholder="Nhập link website (ví dụ: youtube.com) để mở trên điện thoại...">
-          <button class="btn-action" id="btnOpenUrl">🌐 Mở Trên ĐT</button>
+          <input type="text" id="txtUrl" placeholder="Nhập link (ví dụ: youtube.com) mở trên điện thoại...">
+          <button class="btn-action" id="btnOpenUrl">🌐 Mở Link</button>
         </div>
       </div>
 
@@ -212,28 +510,71 @@
       <div class="settings-group">
         <h3 class="section-title">Phím Lệnh Android Nhanh</h3>
         <div class="btn-grid">
-          <button class="btn-quick" data-key="4">🔙 Quay Lại (Back)</button>
-          <button class="btn-quick" data-key="3">🏠 Màn Hình Chính (Home)</button>
-          <button class="btn-quick" data-key="187">📑 Đa Nhiệm (Recents)</button>
-          <button class="btn-quick" data-key="24">🔊 Tăng Âm Lượng</button>
-          <button class="btn-quick" data-key="25">🔉 Giảm Âm Lượng</button>
-          <button class="btn-quick" data-key="26">🔒 Bật/Tắt Nguồn</button>
+          <button class="btn-quick" data-key="4">🔙 Back</button>
+          <button class="btn-quick" data-key="3">🏠 Home</button>
+          <button class="btn-quick" data-key="187">📑 Recents</button>
+          <button class="btn-quick" data-key="24">🔊 Vol +</button>
+          <button class="btn-quick" data-key="25">🔉 Vol -</button>
+          <button class="btn-quick" data-key="26">🔒 Power</button>
         </div>
       </div>
 
       <!-- Tiện ích hỗ trợ -->
       <div class="settings-group">
-        <h3 class="section-title">Tiện Ích & Khắc Phục Lỗi</h3>
+        <h3 class="section-title">Khắc Phục Kết Nối</h3>
         <div class="tool-actions">
-          <button class="btn-action btn-outline" id="btnRestartAdb">🔄 Khởi động lại kết nối (Restart ADB)</button>
-          <button class="btn-action btn-outline" id="btnRefresh">🔍 Quét lại cổng USB</button>
+          <button class="btn-action btn-outline" id="btnRestartAdb">🔄 Khởi động lại ADB Server</button>
         </div>
       </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-      <span id="footerLog">Hệ thống sẵn sàng. Bấm Alt+Z (Khóa ĐT) | Alt+X (Ẩn Gấp) | Alt+3 (Đổi Chuột).</span>
+    <!-- ================= TAB 5: IPHONE / IPAD (IOS) ================= -->
+    <section class="tab-content" id="tabApple">
+      <div class="apple-card">
+        <div class="apple-header">
+          <span class="apple-icon">🍎</span>
+          <div>
+            <h3>KẾT NỐI IPHONE / IPAD (APPLE iOS)</h3>
+            <span class="apple-status-text" id="appleStatus">Đang kiểm tra thiết bị Apple cắm qua USB...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3 class="section-title">1. Kết Nối Cáp USB Lightning / Type-C</h3>
+        <div class="ios-steps">
+          <p>• Cắm cáp iPhone vào cổng USB máy tính.</p>
+          <p>• Mở khóa iPhone, chọn <strong>"Tin cậy máy tính này" (Trust This Computer)</strong> và nhập mật mã.</p>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3 class="section-title">2. Chiếu Màn Hình Không Dây Qua AirPlay (Retina Siêu Nét)</h3>
+        <div class="ios-steps">
+          <p>• Kết nối iPhone và PC vào chung 1 mạng Wi-Fi (hoặc iPhone phát Hotspot cho PC).</p>
+          <p>• Vuốt góc trên màn hình iPhone > Chọn <strong>"Phản chiếu màn hình" (Screen Mirroring)</strong>.</p>
+          <p>• Hình ảnh và âm thanh game iPhone sẽ truyền thẳng lên PC với chất lượng Retina cực đẹp!</p>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3 class="section-title">3. Bật Con Trỏ Chuột Trên iPhone (AssistiveTouch)</h3>
+        <div class="ios-steps">
+          <p>Trên iPhone, vào <strong>Cài đặt > Trợ năng > Cảm ứng > Bật "AssistiveTouch"</strong>.</p>
+          <p>Con trỏ chuột tròn đặc trưng của iOS sẽ xuất hiện để rê chuột điều khiển trực tiếp.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer Status Bar -->
+    <footer class="footer-bar">
+      <div class="footer-left">
+        <span class="footer-beacon"></span>
+        <span id="footerLog">Hệ thống sẵn sàng. F1 / Alt+3 (Đổi Chuột) | Alt+Left/Right (Đổi Chế Độ) | Alt+X (Boss Key).</span>
+      </div>
+      <div class="footer-right">
+        <span class="footer-shortcut-hint">F1: Đổi Chuột</span>
+      </div>
     </footer>
   </div>
 

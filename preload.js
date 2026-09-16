@@ -11,6 +11,38 @@ contextBridge.exposeInMainWorld('api', {
   startControl: (options) => ipcRenderer.invoke('start-control', options),
   stopControl: () => ipcRenderer.invoke('stop-control'),
   sendKeyEvent: (payload) => ipcRenderer.invoke('send-keyevent', payload),
+
+  // Profile & Game Mode APIs
+  getProfiles: () => ipcRenderer.invoke('get-profiles'),
+  setActiveProfile: (profileId) => ipcRenderer.invoke('set-active-profile', profileId),
+  setActiveMode: (payload) => ipcRenderer.invoke('set-active-mode', payload),
+  nextMode: () => ipcRenderer.invoke('next-mode'),
+  prevMode: () => ipcRenderer.invoke('prev-mode'),
+  updateModeOptions: (options) => ipcRenderer.invoke('update-mode-options', options),
+  addProfile: (profileData) => ipcRenderer.invoke('add-profile', profileData),
+  deleteProfile: (profileId) => ipcRenderer.invoke('delete-profile', profileId),
+  updateProfile: (payload) => ipcRenderer.invoke('update-profile', payload),
+  exportProfiles: () => ipcRenderer.invoke('export-profiles'),
+  importProfiles: (data) => ipcRenderer.invoke('import-profiles', data),
+  onModeChanged: (callback) => ipcRenderer.on('mode-changed', (_event, value) => callback(value)),
+
+  // GitHub Gist Sync APIs
+  syncGithubUpload: (payload) => ipcRenderer.invoke('sync-github-upload', payload),
+  syncGithubDownload: (payload) => ipcRenderer.invoke('sync-github-download', payload),
+  getGithubConfig: () => ipcRenderer.invoke('get-github-config'),
+  saveGithubConfig: (payload) => ipcRenderer.invoke('save-github-config', payload),
+
+  // VIP Crosshair & Phone Cooler APIs
+  toggleCrosshair: (enabled) => ipcRenderer.invoke('toggle-crosshair', enabled),
+  updateCrosshair: (config) => ipcRenderer.invoke('update-crosshair', config),
+  togglePhoneCooler: (payload) => ipcRenderer.invoke('toggle-phone-cooler', payload),
+
+  // VIP Game Booster & Rapid Fire Macro APIs
+  boostDevice: (payload) => ipcRenderer.invoke('boost-device', payload),
+  restoreDeviceAnim: (payload) => ipcRenderer.invoke('restore-device-anim', payload),
+  toggleRapidFire: (payload) => ipcRenderer.invoke('toggle-rapid-fire', payload),
+
+  // Core Events
   onRequestStartControl: (callback) => ipcRenderer.on('request-start-control', () => callback()),
   onOtgLog: (callback) => ipcRenderer.on('otg-log', (_event, value) => callback(value)),
   onOtgStatus: (callback) => ipcRenderer.on('otg-status', (_event, value) => callback(value))
