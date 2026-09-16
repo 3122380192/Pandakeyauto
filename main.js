@@ -1050,9 +1050,12 @@ ipcMain.handle('start-control', async (event, options = {}) => {
     }
   } else {
     // Không chiếu màn hình PC, điều khiển thẳng trên màn thật của điện thoại
+    // ⭐ ẨN HOÀN TOÀN: 1x1 borderless, trong suốt, 0% CPU, không hiện bất kỳ cửa sổ/tab đen nào
     args.push('-K', '-M', '--no-video-playback');
-    args.push('--window-width=320', '--window-height=120');
-    args.push('--window-title=APKRemote - Vung Bat Chuot (F1/Alt+3: Doi Chuot | Alt+Z: Khoa | Alt+Left/Right: Che Do)');
+    args.push('--window-borderless');
+    args.push('--window-width=1', '--window-height=1');
+    args.push('--window-x=0', '--window-y=0');
+    args.push('--window-title=APKRemote_HiddenCapture');
     if (stayAwake) args.push('--stay-awake');
     if (!forwardAudio) args.push('--no-audio');
   }
@@ -1083,7 +1086,7 @@ ipcMain.handle('start-control', async (event, options = {}) => {
 
     const modeName = mirrorScreen
       ? `Chiếu màn hình PC (${codec ? codec.toUpperCase() : 'H265'} | ${fps || 120} FPS | Đệm: ${effectiveBuffer || 0}ms)`
-      : 'Vùng Bắt Chuột Trực Tiếp (0ms lag, không video)';
+      : 'Điều Khiển Ngầm Trực Tiếp (0% CPU, Ẩn hoàn toàn cửa sổ đen)';
 
     showOsdNotification({
       icon: '🎮',
@@ -1095,7 +1098,7 @@ ipcMain.handle('start-control', async (event, options = {}) => {
 
     return {
       success: true,
-      message: `Đã kích hoạt [${modeName}]! Bấm Alt / F1 đổi chuột, Alt+Right/Left đổi chế độ, Alt+Z Khóa màn hình.`
+      message: `Đã kích hoạt [${modeName}]! Bấm Alt / F1 đổi chuột siêu tốc, Alt+Right/Left đổi chế độ.`
     };
   } catch (error) {
     return { success: false, message: error.message };

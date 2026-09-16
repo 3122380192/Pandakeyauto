@@ -15,11 +15,17 @@ public class SwitchMouse {
     public static extern bool SetCursorPos(int X, int Y);
 
     [DllImport("user32.dll")]
+    public static extern bool GetCursorPos(out POINT lpPoint);
+
+    [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
     [DllImport("user32.dll")]
     public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
+
+    [DllImport("user32.dll")]
+    public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData, int dwExtraInfo);
 
     [DllImport("user32.dll")]
     public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
@@ -30,12 +36,36 @@ public class SwitchMouse {
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
     public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
     [DllImport("user32.dll")]
     public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
 
     [DllImport("user32.dll")]
     public static extern int GetSystemMetrics(int nIndex);
+
+    [DllImport("user32.dll")]
+    public static extern bool ClipCursor(IntPtr lpRect);
+
+    [DllImport("user32.dll")]
+    public static extern bool ReleaseCapture();
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetDesktopWindow();
+
+    [DllImport("user32.dll")]
+    public static extern bool IsWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll")]
+    public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+    [DllImport("user32.dll")]
+    public static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, uint dwFlags);
 
     // Win32 Low-Level Keyboard Hook
     private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
@@ -61,6 +91,12 @@ public class SwitchMouse {
 
     [DllImport("user32.dll")]
     public static extern IntPtr DispatchMessage([In] ref MSG lpMsg);
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct POINT {
+        public int X;
+        public int Y;
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct MSG {
@@ -91,10 +127,24 @@ public class SwitchMouse {
     public const byte VK_LMENU = 0xA4;     // Left Alt
     public const byte VK_RMENU = 0xA5;     // Right Alt
     public const byte VK_RCONTROL = 0xA3;  // Right Ctrl
+    public const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
     public const uint KEYEVENTF_KEYUP = 0x0002;
+
+    public const uint MOUSEEVENTF_LEFTDOWN = 0x0002;
+    public const uint MOUSEEVENTF_LEFTUP   = 0x0004;
+
     public const int SW_RESTORE = 9;
     public const int SM_CXSCREEN = 0;
     public const int SM_CYSCREEN = 1;
+
+    public const int GWL_EXSTYLE = -20;
+    public const int WS_EX_LAYERED = 0x80000;
+    public const int WS_EX_TOOLWINDOW = 0x0080;
+    public const uint LWA_ALPHA = 0x02;
+
+    private static int savedPcX = -1;
+    private static int savedPcY = -1;
+    private static IntPtr lastPcWindow = IntPtr.Zero;
 
     private static string GetStateFilePath() {
         return Path.Combine(Path.GetTempPath(), "pandakey_mouse_state.txt");
@@ -149,56 +199,119 @@ public class SwitchMouse {
         return scrcpyHwnd;
     }
 
-    public static void Toggle() {
+    public static void ReleaseToPc(IntPtr scrcpyHwnd) {
         try {
-            IntPtr scrcpyHwnd = GetScrcpyWindow();
+            // 1. Giải phóng cursor capture
+            ReleaseCapture();
+            ClipCursor(IntPtr.Zero);
 
-            if (scrcpyHwnd == IntPtr.Zero) {
-                SaveState("pc");
-                Console.WriteLine("SCRCPY_NOT_RUNNING");
-                return;
+            // 2. Gửi tín hiệu ungrab cho Scrcpy (RCtrl + Alt)
+            keybd_event(VK_RCONTROL, 0x1D, KEYEVENTF_EXTENDEDKEY, 0);
+            keybd_event(VK_RCONTROL, 0x1D, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
+            keybd_event(VK_MENU, 0x38, 0, 0);
+            keybd_event(VK_MENU, 0x38, KEYEVENTF_KEYUP, 0);
+
+            // 3. Chuyển focus về cửa sổ PC trước đó (hoặc Desktop)
+            if (lastPcWindow != IntPtr.Zero && IsWindow(lastPcWindow) && lastPcWindow != scrcpyHwnd) {
+                SetForegroundWindow(lastPcWindow);
+            } else {
+                SetForegroundWindow(GetDesktopWindow());
             }
 
-            string currentState = ReadState();
+            // 4. Đưa con trỏ chuột về vị trí trên PC
+            int screenW = GetSystemMetrics(SM_CXSCREEN);
+            int screenH = GetSystemMetrics(SM_CYSCREEN);
+
             RECT rect;
             GetWindowRect(scrcpyHwnd, out rect);
 
-            if (currentState == "phone") {
-                // Đang ở chế độ Phone -> Chuyển sang PC (Nhả chuột về máy tính)
-                keybd_event(VK_MENU, 0x38, 0, 0);
-                keybd_event(VK_MENU, 0x38, KEYEVENTF_KEYUP, 0);
-                keybd_event(VK_RCONTROL, 0x1D, 0, 0);
-                keybd_event(VK_RCONTROL, 0x1D, KEYEVENTF_KEYUP, 0);
+            int targetX = savedPcX;
+            int targetY = savedPcY;
 
-                int screenW = GetSystemMetrics(SM_CXSCREEN);
-                int screenH = GetSystemMetrics(SM_CYSCREEN);
-
-                int targetX = rect.Right + 120;
-                int targetY = rect.Top + 100;
-                if (targetX >= screenW - 30) {
-                    targetX = Math.Max(30, rect.Left - 120);
+            bool isHiddenWindow = (rect.Right - rect.Left <= 10 && rect.Bottom - rect.Top <= 10);
+            if (targetX < 0 || targetY < 0 || (!isHiddenWindow && targetX >= rect.Left && targetX <= rect.Right && targetY >= rect.Top && targetY <= rect.Bottom)) {
+                if (isHiddenWindow) {
+                    targetX = screenW / 2;
+                    targetY = screenH / 2;
+                } else {
+                    targetX = rect.Right + 120;
+                    targetY = rect.Top + 100;
+                    if (targetX >= screenW - 30) targetX = Math.Max(30, rect.Left - 120);
+                    if (targetY >= screenH - 30) targetY = Math.Max(30, rect.Top - 100);
                 }
-                if (targetY >= screenH - 30) {
-                    targetY = Math.Max(30, rect.Top - 100);
-                }
-                SetCursorPos(targetX, targetY);
-
-                SaveState("pc");
-                Console.WriteLine("RELEASED_TO_PC");
-            } else {
-                // Đang ở chế độ PC -> Chuyển sang Phone (Đưa chuột vào game)
-                ShowWindow(scrcpyHwnd, SW_RESTORE);
-                SetForegroundWindow(scrcpyHwnd);
-
-                int centerX = (rect.Left + rect.Right) / 2;
-                int centerY = (rect.Top + rect.Bottom) / 2;
-                SetCursorPos(centerX, centerY);
-
-                SaveState("phone");
-                Console.WriteLine("CAPTURED_TO_PHONE");
             }
+
+            SetCursorPos(targetX, targetY);
+
+            SaveState("pc");
+            Console.WriteLine("RELEASED_TO_PC");
         } catch (Exception ex) {
             Console.WriteLine("ERROR: " + ex.Message);
+        }
+    }
+
+    public static void CaptureToPhone(IntPtr scrcpyHwnd) {
+        try {
+            // 1. Lưu lại cửa sổ và tọa độ chuột PC hiện tại
+            IntPtr fg = GetForegroundWindow();
+            if (fg != scrcpyHwnd) {
+                lastPcWindow = fg;
+            }
+
+            POINT pt;
+            if (GetCursorPos(out pt)) {
+                savedPcX = pt.X;
+                savedPcY = pt.Y;
+            }
+
+            // 2. Kiểm tra nếu là cửa sổ ẩn không video -> đảm bảo trong suốt và không hiện taskbar
+            RECT rect;
+            GetWindowRect(scrcpyHwnd, out rect);
+            bool isHiddenWindow = (rect.Right - rect.Left <= 10 && rect.Bottom - rect.Top <= 10);
+            if (isHiddenWindow) {
+                int ex = GetWindowLong(scrcpyHwnd, GWL_EXSTYLE);
+                if ((ex & WS_EX_LAYERED) == 0) {
+                    SetWindowLong(scrcpyHwnd, GWL_EXSTYLE, ex | WS_EX_LAYERED | WS_EX_TOOLWINDOW);
+                    SetLayeredWindowAttributes(scrcpyHwnd, 0, 1, LWA_ALPHA);
+                }
+            }
+
+            // 3. Kích hoạt và đưa chuột vào cửa sổ Scrcpy
+            ShowWindow(scrcpyHwnd, SW_RESTORE);
+            SetForegroundWindow(scrcpyHwnd);
+
+            int targetX = (rect.Left + rect.Right) / 2;
+            int targetY = (rect.Top + rect.Bottom) / 2;
+            SetCursorPos(targetX, targetY);
+
+            // Bắt chuột vào Scrcpy
+            mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+            mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+
+            SaveState("phone");
+            Console.WriteLine("CAPTURED_TO_PHONE");
+        } catch (Exception ex) {
+            Console.WriteLine("ERROR: " + ex.Message);
+        }
+    }
+
+    public static void Toggle() {
+        IntPtr scrcpyHwnd = GetScrcpyWindow();
+        if (scrcpyHwnd == IntPtr.Zero) {
+            SaveState("pc");
+            Console.WriteLine("SCRCPY_NOT_RUNNING");
+            return;
+        }
+
+        IntPtr fg = GetForegroundWindow();
+        string state = ReadState();
+
+        bool isInsidePhone = (fg == scrcpyHwnd) || (state == "phone");
+
+        if (isInsidePhone) {
+            ReleaseToPc(scrcpyHwnd);
+        } else {
+            CaptureToPhone(scrcpyHwnd);
         }
     }
 
@@ -207,6 +320,7 @@ public class SwitchMouse {
 
     private static bool altPressed = false;
     private static bool comboDetected = false;
+    private static bool altTriggeredOnDown = false;
     private static DateTime altPressTime = DateTime.MinValue;
 
     private static IntPtr SetHook(LowLevelKeyboardProc proc) {
@@ -225,23 +339,49 @@ public class SwitchMouse {
 
             if (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) {
                 if (isAltKey) {
+                    IntPtr scrcpyHwnd = GetScrcpyWindow();
+                    if (scrcpyHwnd != IntPtr.Zero) {
+                        IntPtr fg = GetForegroundWindow();
+                        bool isInsidePhone = (fg == scrcpyHwnd) || (ReadState() == "phone");
+
+                        // ⭐ ĐANG TRONG ĐIỆN THOẠI: Phản hồi 0ms siêu tốc ngay khi vừa chạm phím Alt!
+                        if (isInsidePhone) {
+                            ReleaseToPc(scrcpyHwnd);
+                            altTriggeredOnDown = true;
+                            altPressed = true;
+                            return (IntPtr)1; // Chặn phím Alt lọt vào game / menu
+                        }
+                    }
+
                     if (!altPressed) {
                         altPressed = true;
                         comboDetected = false;
+                        altTriggeredOnDown = false;
                         altPressTime = DateTime.UtcNow;
                     }
                 } else if (altPressed) {
-                    // Nếu nhấn phím khác khi đang giữ Alt (VD: Alt+Tab, Alt+F4, Alt+Left/Right)
+                    // Nếu bấm phím khác khi đang giữ Alt (VD: Alt+Tab, Alt+Left/Right, Alt+X, Alt+Z)
                     comboDetected = true;
                 }
             } else if (msg == WM_KEYUP || msg == WM_SYSKEYUP) {
                 if (isAltKey) {
+                    if (altTriggeredOnDown) {
+                        altTriggeredOnDown = false;
+                        altPressed = false;
+                        comboDetected = false;
+                        return (IntPtr)1; // Chặn phím Alt nhả
+                    }
+
                     if (altPressed && !comboDetected) {
                         double ms = (DateTime.UtcNow - altPressTime).TotalMilliseconds;
-                        // Chỉ chuyển chuột khi nhấp nhả phím Alt đơn thuần (< 800ms)
-                        if (ms < 800) {
-                            if (GetScrcpyWindow() != IntPtr.Zero) {
-                                Toggle();
+                        // Trên PC: bấm nhả Alt nhanh (< 600ms) để vào điện thoại
+                        if (ms < 600) {
+                            IntPtr scrcpyHwnd = GetScrcpyWindow();
+                            if (scrcpyHwnd != IntPtr.Zero) {
+                                CaptureToPhone(scrcpyHwnd);
+                                altPressed = false;
+                                comboDetected = false;
+                                return (IntPtr)1; // Chặn mở menu Windows
                             }
                         }
                     }
@@ -255,7 +395,6 @@ public class SwitchMouse {
 
     public static void Main(string[] args) {
         if (args != null && args.Length > 0 && (args[0] == "--watch" || args[0] == "--hook")) {
-            // Chế độ chạy ngầm lắng nghe phím Alt toàn cục
             _hookID = SetHook(_proc);
             Console.WriteLine("ALT_HOOK_READY");
             MSG msg;
@@ -265,7 +404,6 @@ public class SwitchMouse {
             }
             UnhookWindowsHookEx(_hookID);
         } else {
-            // Chế độ kích hoạt 1 lần (dành cho F1, Alt+3 hoặc gọi thủ công)
             Toggle();
         }
     }
