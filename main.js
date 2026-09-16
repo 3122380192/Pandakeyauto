@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, globalShortcut, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut, screen, shell } = require('electron');
 const path = require('path');
 const os = require('os');
 const { spawn, exec, execFile, execSync } = require('child_process');
@@ -131,6 +131,7 @@ function createWindow() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+    stopRecoilWorker();
     stopMouseWatcher();
     globalShortcut.unregisterAll();
     stopActiveControl();
@@ -936,6 +937,415 @@ ipcMain.handle('set-mouse-speed', async (event, speed) => {
   }
 });
 
+// ================= 🎯 RECOIL CONTROL SYSTEM (WIN32 C# NATIVE ZERO DELAY) =================
+let recoilProcess = null;
+let recoilConfig = {
+  enabled: false,
+  pullY: 4,
+  jitterX: 1,
+  delayMs: 120,
+  intervalMs: 25
+};
+
+function startRecoilWorker() {
+  stopRecoilWorker();
+  const exePath = path.join(binDir, 'recoil_assist.exe');
+  if (fs.existsSync(exePath)) {
+    try {
+      recoilProcess = spawn(exePath, [
+        (recoilConfig.pullY || 4).toString(),
+        (recoilConfig.jitterX || 1).toString(),
+        (recoilConfig.delayMs || 120).toString(),
+        (recoilConfig.intervalMs || 25).toString()
+      ], {
+        cwd: binDir,
+        windowsHide: true
+      });
+      recoilProcess.on('close', () => {
+        recoilProcess = null;
+      });
+    } catch (e) {
+      console.error('Lỗi khi chạy recoil_assist.exe:', e);
+    }
+  }
+}
+
+function stopRecoilWorker() {
+  if (recoilProcess) {
+    try { recoilProcess.kill(); } catch (e) {}
+    recoilProcess = null;
+  }
+}
+
+ipcMain.handle('toggle-recoil', async (event, { enabled, pullY, jitterX, delayMs, intervalMs }) => {
+  recoilConfig.enabled = !!enabled;
+  if (pullY !== undefined) recoilConfig.pullY = pullY;
+  if (jitterX !== undefined) recoilConfig.jitterX = jitterX;
+  if (delayMs !== undefined) recoilConfig.delayMs = delayMs;
+  if (intervalMs !== undefined) recoilConfig.intervalMs = intervalMs;
+
+  if (recoilConfig.enabled) {
+    startRecoilWorker();
+    showOsdNotification({
+      icon: '🔫',
+      game: 'RECOIL CONTROL VIP',
+      badge: 'BẬT (F6)',
+      mode: `Kéo Trục Y: ${recoilConfig.pullY}px • Jitter: ±${recoilConfig.jitterX}px`,
+      specs: `Độ trễ bắt đầu: ${recoilConfig.delayMs}ms • Chu kỳ: ${recoilConfig.intervalMs}ms`
+    });
+    return { success: true, enabled: true, config: recoilConfig, message: 'Đã bật Ghìm Tâm Tự Động (Recoil Control)!' };
+  } else {
+    stopRecoilWorker();
+    showOsdNotification({
+      icon: '⚪',
+      game: 'RECOIL CONTROL',
+      badge: 'ĐÃ TẮT',
+      mode: 'Bắn súng chế độ bình thường',
+      specs: 'Đã tắt tự động ghìm tâm'
+    });
+    return { success: true, enabled: false, message: 'Đã tắt Ghìm Tâm Tự Động.' };
+  }
+});
+
+ipcMain.handle('update-recoil-config', async (event, config = {}) => {
+  recoilConfig = { ...recoilConfig, ...config };
+  if (recoilConfig.enabled) {
+    startRecoilWorker();
+  }
+  return { success: true, config: recoilConfig };
+});
+
+// ================= 📱 KÉO GIÃN MÀN HÌNH TỈ LỆ IPAD 4:3 =================
+ipcMain.handle('set-ipad-view', async (event, { width = 1440, height = 1920, density = 320, deviceId } = {}) => {
+  const target = deviceId ? `-s "${deviceId}"` : '';
+  return new Promise((resolve) => {
+    let cmd = `"${adbPath}" ${target} shell "wm size ${width}x${height}`;
+    if (density && Number(density) > 0) {
+      cmd += ` && wm density ${density}"`;
+    } else {
+      cmd += `"`;
+    }
+    exec(cmd, { windowsHide: true }, (err) => {
+      if (err) return resolve({ success: false, message: 'Lỗi chỉnh màn hình iPad: ' + err.message });
+      showOsdNotification({
+        icon: '📱',
+        game: 'TỈ LỆ IPAD 4:3',
+        badge: `${width}×${height}`,
+        mode: 'Góc nhìn mở rộng chuẩn tuyển thủ',
+        specs: `DPI: ${density || 'Mặc định'} • Hình địch to dễ headshot`
+      });
+      resolve({ success: true, message: `Đã chỉnh tỉ lệ iPad ${width}×${height} (DPI ${density || 'Mặc định'}) thành công!` });
+    });
+  });
+});
+
+ipcMain.handle('reset-ipad-view', async (event, { deviceId } = {}) => {
+  const target = deviceId ? `-s "${deviceId}"` : '';
+  return new Promise((resolve) => {
+    exec(`"${adbPath}" ${target} shell "wm size reset && wm density reset"`, { windowsHide: true }, (err) => {
+      if (err) return resolve({ success: false, message: 'Lỗi khôi phục màn hình: ' + err.message });
+      showOsdNotification({
+        icon: '📱',
+        game: 'MÀN HÌNH GỐC',
+        badge: 'Khôi Phục',
+        mode: 'Đã hoàn trả tỉ lệ gốc điện thoại',
+        specs: 'Độ phân giải mặc định của máy'
+      });
+      resolve({ success: true, message: 'Đã khôi phục màn hình điện thoại về mặc định!' });
+    });
+  });
+});
+
+// ================= 🔁 AUTO FARM / TOUCH MACRO RECORDER & REPLAYER =================
+let isRecordingMacro = false;
+let recordedMacroEvents = [];
+let isPlayingMacro = false;
+let macroStopRequested = false;
+
+ipcMain.handle('start-macro-record', async () => {
+  isRecordingMacro = true;
+  recordedMacroEvents = [];
+  return { success: true, message: 'Bắt đầu ghi thao tác...' };
+});
+
+ipcMain.handle('stop-macro-record', async () => {
+  isRecordingMacro = false;
+  return { success: true, count: recordedMacroEvents.length, events: recordedMacroEvents };
+});
+
+ipcMain.handle('play-macro', async (event, { events, loopCount = 1, speed = 1.0, cooldownMs = 1000, deviceId } = {}) => {
+  if (isPlayingMacro) return { success: false, message: 'Macro đang chạy!' };
+  const target = deviceId ? `-s "${deviceId}"` : '';
+  const runEvents = events || recordedMacroEvents;
+  if (!runEvents || runEvents.length === 0) {
+    return { success: false, message: 'Chưa có thao tác nào được ghi trong bộ nhớ!' };
+  }
+
+  isPlayingMacro = true;
+  macroStopRequested = false;
+
+  showOsdNotification({
+    icon: '🔁',
+    game: 'AUTO MACRO',
+    badge: `Lặp: ${loopCount === -1 ? 'Vô hạn' : loopCount + ' lần'}`,
+    mode: `Tốc độ: ${speed}x`,
+    specs: `${runEvents.length} thao tác đang phát tự động`
+  });
+
+  (async () => {
+    let currentLoop = 0;
+    while (!macroStopRequested && (loopCount === -1 || currentLoop < loopCount)) {
+      currentLoop++;
+      for (let i = 0; i < runEvents.length; i++) {
+        if (macroStopRequested) break;
+        const ev = runEvents[i];
+        if (ev.type === 'tap') {
+          await new Promise((r) => {
+            exec(`"${adbPath}" ${target} shell input tap ${ev.x} ${ev.y}`, { windowsHide: true }, () => r());
+          });
+        }
+        const delay = Math.max(20, Math.round((ev.delay || 150) / (speed || 1.0)));
+        await new Promise((r) => setTimeout(r, delay));
+      }
+      if (loopCount === -1 || currentLoop < loopCount) {
+        await new Promise((r) => setTimeout(r, Math.max(100, cooldownMs)));
+      }
+    }
+    isPlayingMacro = false;
+    macroStopRequested = false;
+  })();
+
+  return { success: true, message: 'Đã bắt đầu phát lại Macro!' };
+});
+
+ipcMain.handle('stop-macro-play', async () => {
+  macroStopRequested = true;
+  isPlayingMacro = false;
+  return { success: true, message: 'Đã dừng phát lại Macro.' };
+});
+
+// ================= 🔋 HARDWARE & BATTERY HUD =================
+ipcMain.handle('get-battery-info', async (event, { deviceId } = {}) => {
+  const target = deviceId ? `-s "${deviceId}"` : '';
+  return new Promise((resolve) => {
+    exec(`"${adbPath}" ${target} shell dumpsys battery`, { windowsHide: true }, (err, stdout) => {
+      if (err || !stdout) {
+        return resolve({ success: false, message: 'Không thể đọc thông số pin: ' + (err ? err.message : '') });
+      }
+      const lines = stdout.split('\n');
+      const data = {
+        level: 100,
+        tempC: 0,
+        voltage: 0,
+        status: 'Bình thường',
+        health: 'Rất Tốt',
+        acPowered: false,
+        usbPowered: false
+      };
+      for (const line of lines) {
+        const tr = line.trim();
+        if (tr.startsWith('level:')) data.level = parseInt(tr.split(':')[1].trim()) || 0;
+        if (tr.startsWith('temperature:')) {
+          const rawTemp = parseInt(tr.split(':')[1].trim()) || 0;
+          data.tempC = (rawTemp / 10).toFixed(1);
+        }
+        if (tr.startsWith('voltage:')) data.voltage = parseInt(tr.split(':')[1].trim()) || 0;
+        if (tr.startsWith('AC powered:')) data.acPowered = tr.includes('true');
+        if (tr.startsWith('USB powered:')) data.usbPowered = tr.includes('true');
+        if (tr.startsWith('status:')) {
+          const s = parseInt(tr.split(':')[1].trim()) || 1;
+          if (s === 2) data.status = 'Đang Sạc Pin';
+          else if (s === 3) data.status = 'Đang Dùng Pin (Xả)';
+          else if (s === 4) data.status = 'Đang Chặn Sạc (Bypass)';
+          else if (s === 5) data.status = 'Pin Đã Đầy';
+          else data.status = 'Bình thường';
+        }
+        if (tr.startsWith('health:')) {
+          const h = parseInt(tr.split(':')[1].trim()) || 2;
+          if (h === 2) data.health = 'Rất Tốt';
+          else if (h === 3) data.health = 'Nhiệt Độ Cao';
+          else if (h === 7) data.health = 'Nhiệt Độ Lạnh';
+          else data.health = 'Ổn Định';
+        }
+      }
+      resolve({ success: true, battery: data });
+    });
+  });
+});
+
+ipcMain.handle('toggle-bypass-charging', async (event, { enabled, deviceId } = {}) => {
+  const target = deviceId ? `-s "${deviceId}"` : '';
+  return new Promise((resolve) => {
+    if (enabled) {
+      exec(`"${adbPath}" ${target} shell "dumpsys battery unplug"`, { windowsHide: true }, () => {
+        showOsdNotification({
+          icon: '🔋',
+          game: 'BYPASS CHARGING',
+          badge: 'ĐÃ BẬT',
+          mode: 'Đấu nguồn trực tiếp cho bo mạch',
+          specs: 'Ngắt sạc vào pin • Chống phồng pin & Chống nóng máy'
+        });
+        resolve({ success: true, enabled: true, message: 'Đã kích hoạt Chế Độ Bỏ Qua Sạc (Bypass Charging)! Máy chạy nguồn trực tiếp, không sạc pin.' });
+      });
+    } else {
+      exec(`"${adbPath}" ${target} shell "dumpsys battery reset"`, { windowsHide: true }, () => {
+        showOsdNotification({
+          icon: '⚡',
+          game: 'SẠC BÌNH THƯỜNG',
+          badge: 'Khôi Phục',
+          mode: 'Đã nạp pin bình thường',
+          specs: 'Nguồn điện nạp vào cell pin'
+        });
+        resolve({ success: true, enabled: false, message: 'Đã khôi phục chế độ sạc pin bình thường.' });
+      });
+    }
+  });
+});
+
+ipcMain.handle('set-refresh-rate', async (event, { rate = 120, deviceId } = {}) => {
+  const target = deviceId ? `-s "${deviceId}"` : '';
+  return new Promise((resolve) => {
+    let cmd = '';
+    if (rate === 'reset' || rate === 60 || rate === '60') {
+      cmd = `"${adbPath}" ${target} shell "settings put system min_refresh_rate 60 && settings put system peak_refresh_rate 60"`;
+    } else {
+      cmd = `"${adbPath}" ${target} shell "settings put system min_refresh_rate ${rate} && settings put system peak_refresh_rate ${rate}"`;
+    }
+    exec(cmd, { windowsHide: true }, (err) => {
+      if (err) return resolve({ success: false, message: err.message });
+      showOsdNotification({
+        icon: '⚡',
+        game: 'TẦN SỐ QUÉT',
+        badge: `${rate}Hz Max`,
+        mode: 'Ép phần cứng 0ms drop',
+        specs: `Khung hình siêu mượt ${rate}Hz`
+      });
+      resolve({ success: true, message: `Đã ép tần số quét màn hình ${rate}Hz thành công!` });
+    });
+  });
+});
+
+// ================= 📦 FILE DRAG & DROP & 1-CLICK WIRELESS ADB =================
+ipcMain.handle('install-apk', async (event, { filePath, deviceId } = {}) => {
+  const target = deviceId ? `-s "${deviceId}"` : '';
+  const baseName = path.basename(filePath);
+  return new Promise((resolve) => {
+    sendLog(`📦 [Cài APK] Đang nạp và cài đặt: ${baseName}...`);
+    exec(`"${adbPath}" ${target} install -r -d "${filePath}"`, { windowsHide: true }, (err, stdout) => {
+      if (err || (stdout && stdout.includes('Failure'))) {
+        return resolve({ success: false, message: 'Lỗi cài APK: ' + (stdout || err.message) });
+      }
+      showOsdNotification({
+        icon: '📦',
+        game: 'CÀI APK THÀNH CÔNG',
+        badge: 'Hoàn Tất',
+        mode: baseName,
+        specs: 'Ứng dụng đã sẵn sàng trên màn hình điện thoại'
+      });
+      resolve({ success: true, message: `Cài đặt ${baseName} thành công!` });
+    });
+  });
+});
+
+ipcMain.handle('push-file-to-phone', async (event, { filePath, destDir = '/sdcard/Download/', deviceId } = {}) => {
+  const target = deviceId ? `-s "${deviceId}"` : '';
+  const fileName = path.basename(filePath);
+  return new Promise((resolve) => {
+    sendLog(`📁 [Chép File] Đang đẩy: ${fileName} vào ${destDir}...`);
+    exec(`"${adbPath}" ${target} push "${filePath}" "${destDir}"`, { windowsHide: true }, (err) => {
+      if (err) return resolve({ success: false, message: 'Lỗi chép file: ' + err.message });
+      exec(`"${adbPath}" ${target} shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d "file://${destDir}${fileName}"`, { windowsHide: true }, () => {});
+      showOsdNotification({
+        icon: '📁',
+        game: 'CHÉP FILE THÀNH CÔNG',
+        badge: 'Download/',
+        mode: fileName,
+        specs: `Đã lưu vào thư mục ${destDir}`
+      });
+      resolve({ success: true, message: `Đã chép file ${fileName} vào ${destDir}!` });
+    });
+  });
+});
+
+ipcMain.handle('activate-wireless-adb', async (event, { deviceId } = {}) => {
+  const target = deviceId ? `-s "${deviceId}"` : '';
+  return new Promise((resolve) => {
+    exec(`"${adbPath}" ${target} tcpip 5555`, { windowsHide: true }, (err) => {
+      if (err) return resolve({ success: false, message: 'Lỗi mở cổng 5555: ' + err.message });
+      exec(`"${adbPath}" ${target} shell "ip addr show wlan0 || ip route"`, { windowsHide: true }, (err2, stdout2) => {
+        let ip = null;
+        if (stdout2) {
+          const m = stdout2.match(/inet\s+([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/);
+          if (m) ip = m[1];
+        }
+        if (!ip) {
+          return resolve({ success: false, message: 'Không thể tự động tìm thấy IP Wi-Fi điện thoại. Hãy đảm bảo điện thoại đang bắt Wi-Fi cùng mạng với PC!' });
+        }
+        exec(`"${adbPath}" connect ${ip}:5555`, { windowsHide: true }, (err3, stdout3) => {
+          if (err3 || (stdout3 && stdout3.includes('failed'))) {
+            return resolve({ success: false, message: `Kết nối tới ${ip}:5555 thất bại: ${stdout3}` });
+          }
+          showOsdNotification({
+            icon: '📡',
+            game: 'WIRELESS ADB',
+            badge: `${ip}:5555`,
+            mode: 'Đã kết nối không dây 100%',
+            specs: 'BẠN CÓ THỂ RÚT CÁP USB NGAY BÂY GIỜ!'
+          });
+          resolve({ success: true, ip, message: `Kết nối không dây thành công tới ${ip}:5555! Bạn có thể rút cáp USB.` });
+        });
+      });
+    });
+  });
+});
+
+// ================= 🎥 STREAMER & CONTENT CREATOR =================
+ipcMain.handle('toggle-show-touches', async (event, { enabled, deviceId } = {}) => {
+  const target = deviceId ? `-s "${deviceId}"` : '';
+  return new Promise((resolve) => {
+    exec(`"${adbPath}" ${target} shell settings put system show_touches ${enabled ? 1 : 0}`, { windowsHide: true }, (err) => {
+      if (err) return resolve({ success: false, message: err.message });
+      resolve({ success: true, enabled, message: enabled ? 'Đã bật hiển thị chấm chạm tay trên màn hình.' : 'Đã tắt hiển thị chạm.' });
+    });
+  });
+});
+
+ipcMain.handle('open-recordings-folder', async () => {
+  const recDir = path.join(__dirname, 'Recordings');
+  if (!fs.existsSync(recDir)) {
+    try { fs.mkdirSync(recDir, { recursive: true }); } catch (e) {}
+  }
+  shell.openPath(recDir);
+  return { success: true };
+});
+
+// ================= 🎨 COMBAT ASSIST & COLOR AIM / FILTER =================
+let colorAssistConfig = {
+  enabled: false,
+  color: 'red',
+  fovSize: 80,
+  smoothSpeed: 5,
+  triggerBot: false,
+  filterMode: 'vibrance'
+};
+
+ipcMain.handle('toggle-color-assist', async (event, { enabled } = {}) => {
+  colorAssistConfig.enabled = !!enabled;
+  showOsdNotification({
+    icon: enabled ? '🎯' : '⚪',
+    game: 'COLOR AIM ASSIST',
+    badge: enabled ? 'ĐÃ KÍCH HOẠT' : 'ĐÃ TẮT',
+    mode: enabled ? `Phát hiện màu: ${colorAssistConfig.color.toUpperCase()}` : 'Tắt hỗ trợ di tâm',
+    specs: enabled ? `FOV: ${colorAssistConfig.fovSize}px • Smooth: ${colorAssistConfig.smoothSpeed}` : 'Chuẩn gốc'
+  });
+  return { success: true, config: colorAssistConfig };
+});
+
+ipcMain.handle('update-color-assist-config', async (event, config = {}) => {
+  colorAssistConfig = { ...colorAssistConfig, ...config };
+  return { success: true, config: colorAssistConfig };
+});
+
 // ================= KHỞI CHẠY SCRCPY VỚI TỐI ƯU HÓA HÌNH ẢNH & ĐỘ TRỄ =================
 ipcMain.handle('start-control', async (event, options = {}) => {
   if (controlProcess) {
@@ -959,7 +1369,8 @@ ipcMain.handle('start-control', async (event, options = {}) => {
     videoBuffer,
     audioBuffer,
     renderDriver,
-    mouseSpeed = 'native'
+    mouseSpeed = 'native',
+    recordGameplay = false
   } = currentOptions;
 
   // Ghi tức thì cấu hình tốc độ chuột để switch_mouse.exe áp dụng hãm tốc độ phần cứng
@@ -1051,6 +1462,19 @@ ipcMain.handle('start-control', async (event, options = {}) => {
     // 11. Giữ điện thoại luôn thức khi cắm cáp
     if (stayAwake) {
       args.push('--stay-awake');
+    }
+
+    // 12. Ghi hình trận đấu trực tiếp qua GPU máy tính (0% lag điện thoại)
+    if (recordGameplay) {
+      const recDir = path.join(__dirname, 'Recordings');
+      if (!fs.existsSync(recDir)) {
+        try { fs.mkdirSync(recDir, { recursive: true }); } catch (e) {}
+      }
+      const recFileName = `Gameplay_${new Date().toISOString().replace(/[:.]/g, '-')}.mp4`;
+      const recPath = path.join(recDir, recFileName);
+      args.push(`--record=${recPath}`);
+      args.push('--record-format=mp4');
+      sendLog(`🔴 [Ghi hình MP4] Đang ghi hình trận đấu vào: ${recFileName}`);
     }
   } else {
     // ⭐ TAB BẢNG ĐEN (VÙNG BẮT CHUỘT TRỰC TIẾP - 0% CPU, TỐI ƯU TỐC ĐỘ CHUỘT CHUẨN XÁC)

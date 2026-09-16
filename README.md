@@ -68,6 +68,7 @@ powershell -ep bypass -c "irm https://raw.githubusercontent.com/3122380192/Panda
 | Phím Tắt | Chức Năng |
 | :--- | :--- |
 | <kbd>F1</kbd> hoặc <kbd>Alt</kbd> + <kbd>3</kbd> | **Đổi chuột 2 chiều siêu tốc (15ms)** giữa PC và Điện thoại |
+| <kbd>F6</kbd> | **Bật / Tắt Ghìm Tâm Tự Động (Recoil Control VIP)** |
 | <kbd>Alt</kbd> + <kbd>Right</kbd> | **Chế Độ Tiếp Theo** (Next Game Mode) kèm HUD nổi |
 | <kbd>Alt</kbd> + <kbd>Left</kbd> | **Chế Độ Trước Đó** (Prev Game Mode) kèm HUD nổi |
 | <kbd>Alt</kbd> + <kbd>X</kbd> | **Boss Key**: Tắt màn hình ĐT (game vẫn chạy) & Ẩn cửa sổ PC |

@@ -43,6 +43,38 @@ contextBridge.exposeInMainWorld('api', {
   restoreDeviceAnim: (payload) => ipcRenderer.invoke('restore-device-anim', payload),
   toggleRapidFire: (payload) => ipcRenderer.invoke('toggle-rapid-fire', payload),
 
+  // 🎯 Recoil Control System APIs
+  toggleRecoil: (payload) => ipcRenderer.invoke('toggle-recoil', payload),
+  updateRecoilConfig: (payload) => ipcRenderer.invoke('update-recoil-config', payload),
+
+  // 📱 iPad Screen View (4:3) APIs
+  setIpadView: (payload) => ipcRenderer.invoke('set-ipad-view', payload),
+  resetIpadView: (payload) => ipcRenderer.invoke('reset-ipad-view', payload),
+
+  // 🔁 Auto Farm / Touch Macro Recorder APIs
+  startMacroRecord: () => ipcRenderer.invoke('start-macro-record'),
+  stopMacroRecord: () => ipcRenderer.invoke('stop-macro-record'),
+  playMacro: (payload) => ipcRenderer.invoke('play-macro', payload),
+  stopMacroPlay: () => ipcRenderer.invoke('stop-macro-play'),
+
+  // 🔋 Hardware & Battery HUD APIs
+  getBatteryInfo: (payload) => ipcRenderer.invoke('get-battery-info', payload),
+  toggleBypassCharging: (payload) => ipcRenderer.invoke('toggle-bypass-charging', payload),
+  setRefreshRate: (payload) => ipcRenderer.invoke('set-refresh-rate', payload),
+
+  // 📦 File Drag & Drop & Wireless ADB APIs
+  installApk: (payload) => ipcRenderer.invoke('install-apk', payload),
+  pushFileToPhone: (payload) => ipcRenderer.invoke('push-file-to-phone', payload),
+  activateWirelessAdb: (payload) => ipcRenderer.invoke('activate-wireless-adb', payload),
+
+  // 🎥 Streamer & Content Creator APIs
+  toggleShowTouches: (payload) => ipcRenderer.invoke('toggle-show-touches', payload),
+  openRecordingsFolder: () => ipcRenderer.invoke('open-recordings-folder'),
+
+  // 🎨 Combat Assist & Color Aim / Filter APIs
+  toggleColorAssist: (payload) => ipcRenderer.invoke('toggle-color-assist', payload),
+  updateColorAssistConfig: (payload) => ipcRenderer.invoke('update-color-assist-config', payload),
+
   // Core Events
   onRequestStartControl: (callback) => ipcRenderer.on('request-start-control', () => callback()),
   onOtgLog: (callback) => ipcRenderer.on('otg-log', (_event, value) => callback(value)),

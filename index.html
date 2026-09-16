@@ -33,7 +33,7 @@
       </div>
     </header>
 
-    <!-- 5 Tabs Hiện Đại -->
+    <!-- 7 Tabs Hiện Đại -->
     <nav class="tabs">
       <button class="tab-btn active" data-tab="tabGame">
         <span class="tab-icon">🎮</span> <span>Chiến Game</span>
@@ -41,11 +41,17 @@
       <button class="tab-btn" data-tab="tabVip">
         <span class="tab-icon">🎯</span> <span>VIP Trợ Năng</span>
       </button>
-      <button class="tab-btn" data-tab="tabProfiles">
-        <span class="tab-icon">☁️</span> <span>Cloud & Hồ Sơ</span>
+      <button class="tab-btn" data-tab="tabHardware">
+        <span class="tab-icon">⚡</span> <span>Hiệu Năng & Pin</span>
       </button>
       <button class="tab-btn" data-tab="tabFeatures">
-        <span class="tab-icon">⚙️</span> <span>Tiện Ích & Phím Tắt</span>
+        <span class="tab-icon">📦</span> <span>Tiện Ích & Không Dây</span>
+      </button>
+      <button class="tab-btn" data-tab="tabStream">
+        <span class="tab-icon">🎥</span> <span>Trình Chiếu & Stream</span>
+      </button>
+      <button class="tab-btn" data-tab="tabProfiles">
+        <span class="tab-icon">☁️</span> <span>Cloud & Hồ Sơ</span>
       </button>
       <button class="tab-btn" data-tab="tabApple">
         <span class="tab-icon">🍎</span> <span>iOS (iPhone/iPad)</span>
@@ -147,171 +153,329 @@
         <div class="hotkey-chip"><span class="kbd">Alt+Z</span> Khóa Màn ĐT</div>
       </div>
 
-      <!-- BỐ CỤC 2 PHẦN GỌN GÀNG (SPLIT 2-COLUMN LAYOUT) -->
-      <div class="settings-two-columns">
+      <!-- THANH 3 SUB-TABS GỌN GÀNG TRONG CỬA SỔ CHIẾN GAME -->
+      <div class="game-sub-tabs-bar">
+        <div class="game-sub-tabs">
+          <button class="sub-tab-btn active" data-subtab="subtabTuning">
+            <span class="sub-tab-icon">⚙️</span>
+            <span>1. Thông Số & Chuột</span>
+          </button>
+          <button class="sub-tab-btn" data-subtab="subtabControls">
+            <span class="sub-tab-icon">🛡️</span>
+            <span>2. Chế Độ & Tính Năng</span>
+          </button>
+          <button class="sub-tab-btn sub-tab-vip" data-subtab="subtabCombatVip">
+            <span class="sub-tab-icon">🎯</span>
+            <span>3. Chiến Thuật VIP</span>
+            <span class="sub-tab-badge">PRO</span>
+          </button>
+        </div>
+
+        <!-- NÚT GẠT BẬT/TẮT NHANH GHÌM TÂM THU GỌN Ở GÓC PHẢI -->
+        <div class="sub-tab-quick-action" title="Bật/Tắt nhanh ghìm tâm không cần chuyển tab (Phím nóng: F6)">
+          <span class="mini-label">🔫 Ghìm Tâm (F6):</span>
+          <span class="switch-state-text" id="lblRecoilStateQuick">TẮT</span>
+          <button class="btn-toggle-switch" id="btnToggleRecoilQuick">
+            <span class="switch-ball"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- VÙNG NỘI DUNG 3 SUB-TABS GỌN GÀNG KHÔNG BỊ TRÀN MÀN HÌNH -->
+      <div class="game-sub-content">
         
-        <!-- CỘT 1: TINH CHỈNH TÍN HIỆU & ĐỘ NHẠY CHUỘT -->
-        <div class="settings-col-card">
-          <div class="section-header-flex">
-            <h3 class="section-title">⚙️ Tinh Chỉnh Thông Số & Độ Nhạy</h3>
-            <span class="section-sub-tip">Tự động lưu Profile</span>
-          </div>
-          
-          <div class="tuning-grid">
-            <!-- Video Codec -->
-            <div class="tuning-item">
-              <label for="selCodec">Bộ Mã Hóa (Codec):</label>
-              <select id="selCodec" class="select-modern">
-                <option value="h265" selected>H.265 / HEVC (Siêu Nhẹ)</option>
-                <option value="h264">H.264 (Tương Thích Cao)</option>
-                <option value="av1">AV1 (Nén Cao Cấp)</option>
-              </select>
+        <!-- ================= SUB-TAB 1: THÔNG SỐ & ĐỘ NHẠY CHUỘT ================= -->
+        <div class="sub-tab-pane active" id="subtabTuning">
+          <div class="settings-col-card">
+            <div class="section-header-flex">
+              <h3 class="section-title">⚙️ Tinh Chỉnh Thông Số & Độ Nhạy Chuột</h3>
+              <span class="section-sub-tip">Tự động nạp tối ưu theo từng game</span>
             </div>
+            
+            <div class="tuning-grid tuning-grid-3col">
+              <!-- Video Codec -->
+              <div class="tuning-item">
+                <label for="selCodec">Bộ Mã Hóa (Codec):</label>
+                <select id="selCodec" class="select-modern">
+                  <option value="h265" selected>H.265 / HEVC (Siêu Nhẹ)</option>
+                  <option value="h264">H.264 (Tương Thích Cao)</option>
+                  <option value="av1">AV1 (Nén Cao Cấp)</option>
+                </select>
+              </div>
 
-            <!-- Max FPS -->
-            <div class="tuning-item">
-              <label for="selFps">Khung Hình (FPS):</label>
-              <select id="selFps" class="select-modern">
-                <option value="120" selected>120 FPS (Phản Xạ Cực Nhanh)</option>
-                <option value="90">90 FPS (Mượt Mà Ổn Định)</option>
-                <option value="60">60 FPS (Chuẩn Mặc Định)</option>
-                <option value="30">30 FPS (Tiết Kiệm Pin)</option>
-              </select>
-            </div>
+              <!-- Max FPS -->
+              <div class="tuning-item">
+                <label for="selFps">Khung Hình (FPS):</label>
+                <select id="selFps" class="select-modern">
+                  <option value="120" selected>120 FPS (Phản Xạ Cực Nhanh)</option>
+                  <option value="90">90 FPS (Mượt Mà Ổn Định)</option>
+                  <option value="60">60 FPS (Chuẩn Mặc Định)</option>
+                  <option value="30">30 FPS (Tiết Kiệm Pin)</option>
+                </select>
+              </div>
 
-            <!-- Video Buffer -->
-            <div class="tuning-item">
-              <label for="selDisplayBuffer">Bộ Đệm Trễ (Buffer):</label>
-              <select id="selDisplayBuffer" class="select-modern">
-                <option value="0" selected>0 ms (Zero Delay Tức Thì)</option>
-                <option value="10">10 ms (Cực Thấp Chống Giật)</option>
-                <option value="25">25 ms (Ổn Định Cho Wi-Fi)</option>
-                <option value="50">50 ms (Mạng Chậm / Yếu)</option>
-              </select>
-            </div>
+              <!-- Video Buffer -->
+              <div class="tuning-item">
+                <label for="selDisplayBuffer">Bộ Đệm Trễ (Buffer):</label>
+                <select id="selDisplayBuffer" class="select-modern">
+                  <option value="0" selected>0 ms (Zero Delay Tức Thì)</option>
+                  <option value="10">10 ms (Cực Thấp Chống Giật)</option>
+                  <option value="25">25 ms (Ổn Định Cho Wi-Fi)</option>
+                  <option value="50">50 ms (Mạng Chậm / Yếu)</option>
+                </select>
+              </div>
 
-            <!-- Max Size -->
-            <div class="tuning-item">
-              <label for="selMaxSize">Độ Phân Giải:</label>
-              <select id="selMaxSize" class="select-modern">
-                <option value="1080" selected>1080p Full HD (Chuẩn Nét)</option>
-                <option value="1440">1440p / 2K (Siêu Nét PC)</option>
-                <option value="720">720p HD (Tối Ưu Tốc Độ)</option>
-                <option value="0">Gốc Điện Thoại (Native)</option>
-              </select>
-            </div>
+              <!-- Max Size -->
+              <div class="tuning-item">
+                <label for="selMaxSize">Độ Phân Giải:</label>
+                <select id="selMaxSize" class="select-modern">
+                  <option value="1080" selected>1080p Full HD (Chuẩn Nét)</option>
+                  <option value="1440">1440p / 2K (Siêu Nét PC)</option>
+                  <option value="720">720p HD (Tối Ưu Tốc Độ)</option>
+                  <option value="0">Gốc Điện Thoại (Native)</option>
+                </select>
+              </div>
 
-            <!-- Bitrate -->
-            <div class="tuning-item">
-              <label for="selBitrate">Băng Thông (Bitrate):</label>
-              <select id="selBitrate" class="select-modern">
-                <option value="16M" selected>16 Mbps (Nét Căng Mặc Định)</option>
-                <option value="24M">24 Mbps (Đồ Họa Cao Cấp)</option>
-                <option value="12M">12 Mbps (Cân Bằng Mượt)</option>
-                <option value="8M">8 Mbps (Mạng Yếu / Treo Máy)</option>
-              </select>
-            </div>
+              <!-- Bitrate -->
+              <div class="tuning-item">
+                <label for="selBitrate">Băng Thông (Bitrate):</label>
+                <select id="selBitrate" class="select-modern">
+                  <option value="16M" selected>16 Mbps (Nét Căng Mặc Định)</option>
+                  <option value="24M">24 Mbps (Đồ Họa Cao Cấp)</option>
+                  <option value="12M">12 Mbps (Cân Bằng Mượt)</option>
+                  <option value="8M">8 Mbps (Mạng Yếu / Treo Máy)</option>
+                </select>
+              </div>
 
-            <!-- Render Engine -->
-            <div class="tuning-item">
-              <label for="selRenderDriver">Bộ Dựng Hình (GPU Engine):</label>
-              <select id="selRenderDriver" class="select-modern">
-                <option value="direct3d11" selected>Direct3D 11 (GPU Windows)</option>
-                <option value="opengl">OpenGL</option>
-              </select>
-            </div>
+              <!-- Render Engine -->
+              <div class="tuning-item">
+                <label for="selRenderDriver">Bộ Dựng Hình (GPU Engine):</label>
+                <select id="selRenderDriver" class="select-modern">
+                  <option value="direct3d11" selected>Direct3D 11 (GPU Windows)</option>
+                  <option value="opengl">OpenGL</option>
+                </select>
+              </div>
 
-            <!-- Tốc độ chuột trên Điện thoại -->
-            <div class="tuning-item tuning-full-col">
-              <label for="selMouseSpeed">Độ Nhạy Chuột ĐT (Sensitivity):</label>
-              <select id="selMouseSpeed" class="select-modern">
-                <option value="native" selected>⭐ Tốc độ chuẩn Tab Bảng Đen (Khuyên dùng - Cực mượt)</option>
-                <option value="0.25">25% (Hãm tốc chậm - Chuột DPI cao 1600+)</option>
-                <option value="0.35">35% (Hãm tốc vừa - Ghìm tâm cực đầm)</option>
-                <option value="0.5">50% (Hãm nhẹ - Chuẩn FPS)</option>
-                <option value="1.0">100% (Gốc PC - Không can thiệp)</option>
-              </select>
+              <!-- Tốc độ chuột trên Điện thoại -->
+              <div class="tuning-item tuning-full-col">
+                <label for="selMouseSpeed">Độ Nhạy Chuột ĐT (Sensitivity):</label>
+                <select id="selMouseSpeed" class="select-modern">
+                  <option value="native" selected>⭐ Tốc độ chuẩn Tab Bảng Đen (Khuyên dùng - Cực mượt)</option>
+                  <option value="0.25">25% (Hãm tốc chậm - Chuột DPI cao 1600+)</option>
+                  <option value="0.35">35% (Hãm tốc vừa - Ghìm tâm cực đầm)</option>
+                  <option value="0.5">50% (Hãm nhẹ - Chuẩn FPS)</option>
+                  <option value="1.0">100% (Gốc PC - Không can thiệp)</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- CỘT 2: CHỌN CHẾ ĐỘ & TÙY CHỌN CHỨC NĂNG -->
-        <div class="settings-col-card">
-          <div class="section-header-flex">
-            <h3 class="section-title">🛡️ Chế Độ & Tính Năng Điều Khiển</h3>
-            <span class="section-sub-tip">Tối ưu theo nhu cầu</span>
-          </div>
-
-          <!-- CHỌN CHẾ ĐỘ: TAB BẢNG ĐEN HOẶC CHIẾU MÀN HÌNH -->
-          <div class="mode-select-box">
-            <label class="mode-card-option active" id="lblModeBlackTab">
-              <input type="radio" name="mainControlMode" id="radModeBlackTab" value="blackTab" checked>
-              <div class="mode-card-content">
-                <div class="mode-card-title">⬛ Tab Bảng Đen (Vùng Bắt Chuột)</div>
-                <div class="mode-card-sub">⭐ Tối ưu tốc độ chuột nhất • 0% CPU • Đổi chuột Alt 0ms</div>
-              </div>
-            </label>
-
-            <label class="mode-card-option" id="lblModeMirror">
-              <input type="radio" name="mainControlMode" id="radModeMirror" value="mirror">
-              <div class="mode-card-content">
-                <div class="mode-card-title">🖥️ Chiếu Màn Hình PC (120 FPS)</div>
-                <div class="mode-card-sub">Hiển thị video màn hình điện thoại lên máy tính</div>
-              </div>
-            </label>
-          </div>
-
-          <div class="checkbox-row-container">
-            <label class="checkbox-row highlight-check">
-              <input type="checkbox" id="chkEnableControl" checked>
-              <div class="check-text">
-                <strong>Cho phép chuột & bàn phím điều khiển điện thoại</strong>
-                <small>Bấm chuột và gõ phím vào game điện thoại.</small>
-              </div>
-            </label>
-
-            <label class="checkbox-row highlight-check">
-              <input type="checkbox" id="chkUhidInput" checked>
-              <div class="check-text">
-                <strong>Phím phần cứng UHID (Khuyên dùng)</strong>
-                <small>Khắc phục triệt để lỗi Vivo/Xiaomi chặn phím.</small>
-              </div>
-            </label>
-
-            <label class="checkbox-row">
-              <input type="checkbox" id="chkTurnScreenOff">
-              <div class="check-text">
-                <strong>Tắt màn hình thật của điện thoại</strong>
-                <small>Tiết kiệm pin và chống nóng máy khi chiếu lên PC.</small>
-              </div>
-            </label>
-
-            <label class="checkbox-row">
-              <input type="checkbox" id="chkForwardAudio" checked>
-              <div class="check-text">
-                <strong>Truyền âm thanh game sang PC (10ms)</strong>
-                <small>Nghe tiếng bước chân kẻ địch qua tai nghe máy tính.</small>
-              </div>
-            </label>
-
-            <label class="checkbox-row">
-              <input type="checkbox" id="chkStayAwake" checked>
-              <div class="check-text">
-                <strong>Giữ điện thoại luôn thức khi cắm cáp</strong>
-                <small>Không bị tắt nguồn hoặc khóa màn hình giữa trận chiến.</small>
-              </div>
-            </label>
-          </div>
-
-          <!-- Panda Mouse Pro Banner Tích Hợp Gọn -->
-          <div class="panda-card-compact">
-            <div class="panda-left">
-              <span class="panda-badge">🐼 PANDA MOUSE PRO</span>
-              <p class="panda-desc">Kích hoạt keymapping WASD, ngắm bắn chuột 1-Click.</p>
+        <!-- ================= SUB-TAB 2: CHẾ ĐỘ & TÍNH NĂNG ĐIỀU KHIỂN ================= -->
+        <div class="sub-tab-pane" id="subtabControls">
+          <div class="settings-col-card">
+            <div class="section-header-flex">
+              <h3 class="section-title">🛡️ Chế Độ & Tính Năng Điều Khiển</h3>
+              <span class="section-sub-tip">Tối ưu theo nhu cầu</span>
             </div>
-            <button class="btn-panda" id="btnActivatePanda">
-              🚀 KÍCH HOẠT PANDA
-            </button>
+
+            <!-- CHỌN CHẾ ĐỘ: TAB BẢNG ĐEN HOẶC CHIẾU MÀN HÌNH -->
+            <div class="mode-select-box">
+              <label class="mode-card-option active" id="lblModeBlackTab">
+                <input type="radio" name="mainControlMode" id="radModeBlackTab" value="blackTab" checked>
+                <div class="mode-card-content">
+                  <div class="mode-card-title">⬛ Tab Bảng Đen (Vùng Bắt Chuột)</div>
+                  <div class="mode-card-sub">⭐ Tối ưu tốc độ chuột nhất • 0% CPU • Đổi chuột Alt 0ms</div>
+                </div>
+              </label>
+
+              <label class="mode-card-option" id="lblModeMirror">
+                <input type="radio" name="mainControlMode" id="radModeMirror" value="mirror">
+                <div class="mode-card-content">
+                  <div class="mode-card-title">🖥️ Chiếu Màn Hình PC (120 FPS)</div>
+                  <div class="mode-card-sub">Hiển thị video màn hình điện thoại lên máy tính</div>
+                </div>
+              </label>
+            </div>
+
+            <div class="checkbox-row-container">
+              <label class="checkbox-row highlight-check">
+                <div class="check-text">
+                  <strong>Cho phép chuột & bàn phím điều khiển điện thoại</strong>
+                  <small>Bấm chuột và gõ phím vào game điện thoại.</small>
+                </div>
+                <input type="checkbox" id="chkEnableControl" checked>
+              </label>
+
+              <label class="checkbox-row highlight-check">
+                <div class="check-text">
+                  <strong>Phím phần cứng UHID (Khuyên dùng)</strong>
+                  <small>Khắc phục triệt để lỗi Vivo/Xiaomi chặn phím.</small>
+                </div>
+                <input type="checkbox" id="chkUhidInput" checked>
+              </label>
+
+              <label class="checkbox-row">
+                <div class="check-text">
+                  <strong>Tắt màn hình thật của điện thoại</strong>
+                  <small>Tiết kiệm pin và chống nóng máy khi chiếu lên PC.</small>
+                </div>
+                <input type="checkbox" id="chkTurnScreenOff">
+              </label>
+
+              <label class="checkbox-row">
+                <div class="check-text">
+                  <strong>Truyền âm thanh game sang PC (10ms)</strong>
+                  <small>Nghe tiếng bước chân kẻ địch qua tai nghe máy tính.</small>
+                </div>
+                <input type="checkbox" id="chkForwardAudio" checked>
+              </label>
+
+              <label class="checkbox-row">
+                <div class="check-text">
+                  <strong>Giữ điện thoại luôn thức khi cắm cáp</strong>
+                  <small>Không bị tắt nguồn hoặc khóa màn hình giữa trận chiến.</small>
+                </div>
+                <input type="checkbox" id="chkStayAwake" checked>
+              </label>
+            </div>
+
+            <!-- Panda Mouse Pro Banner Tích Hợp Gọn -->
+            <div class="panda-card-compact">
+              <div class="panda-left">
+                <span class="panda-badge">🐼 PANDA MOUSE PRO</span>
+                <p class="panda-desc">Kích hoạt keymapping WASD, ngắm bắn chuột 1-Click.</p>
+              </div>
+              <button class="btn-panda" id="btnActivatePanda">
+                🚀 KÍCH HOẠT PANDA
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= SUB-TAB 3: CHIẾN THUẬT & AUTO COMBAT VIP ================= -->
+        <div class="sub-tab-pane" id="subtabCombatVip">
+          <div class="combat-tactics-card" style="margin-top: 0;">
+            <div class="combat-header-row">
+              <div class="combat-header-left">
+                <span class="combat-icon">🎯</span>
+                <div>
+                  <h3>CHIẾN THUẬT & AUTO COMBAT VIP</h3>
+                  <p class="combat-sub">Tùy chỉnh ghìm tâm chống giật súng, góc nhìn iPad 4:3 và auto farm lặp lại thao tác.</p>
+                </div>
+              </div>
+              <span class="vip-badge-glow">PRO GAMER</span>
+            </div>
+
+            <div class="combat-features-grid">
+              <!-- 1. BỘ GHÌM TÂM TỰ ĐỘNG (RECOIL CONTROL SYSTEM) -->
+              <div class="combat-feature-item">
+                <div class="feature-item-header">
+                  <div class="feature-item-title">
+                    <span class="item-emoji">🔫</span>
+                    <strong>Ghìm Tâm Tự Động (Recoil Control)</strong>
+                  </div>
+                  <div class="toggle-switch-wrapper">
+                    <span class="switch-state-text" id="lblRecoilState">TẮT</span>
+                    <button class="btn-toggle-switch" id="btnToggleRecoil" title="Bật/Tắt ghìm tâm (F6)">
+                      <span class="switch-ball"></span>
+                    </button>
+                  </div>
+                </div>
+                <p class="feature-item-desc">Tự động kéo tâm xuống khi giữ chuột trái sấy đạn liên thanh (Phím tắt: <strong>F6</strong> hoặc bấm nút).</p>
+                
+                <div class="recoil-sliders-box">
+                  <div class="slider-row">
+                    <label for="rngRecoilY">Độ Kéo Trục Y: <strong id="lblRecoilY" class="slider-val">4 px</strong></label>
+                    <input type="range" id="rngRecoilY" min="1" max="20" value="4">
+                  </div>
+                  <div class="slider-row">
+                    <label for="rngRecoilJitter">Rung Ngang (Khử Phát Hiện): <strong id="lblRecoilJitter" class="slider-val">±1 px</strong></label>
+                    <input type="range" id="rngRecoilJitter" min="0" max="5" value="1">
+                  </div>
+                  <div class="slider-row">
+                    <label for="rngRecoilDelay">Độ Trễ Bắt Đầu Ghìm: <strong id="lblRecoilDelay" class="slider-val">120 ms</strong></label>
+                    <input type="range" id="rngRecoilDelay" min="30" max="300" step="10" value="120">
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. KÉO GIÃN MÀN HÌNH TỈ LỆ IPAD (4:3) -->
+              <div class="combat-feature-item">
+                <div class="feature-item-header">
+                  <div class="feature-item-title">
+                    <span class="item-emoji">📱</span>
+                    <strong>Góc Nhìn iPad 4:3 (iPad View)</strong>
+                  </div>
+                  <div class="toggle-switch-wrapper">
+                    <span class="switch-state-text" id="lblIpadState">TẮT</span>
+                    <button class="btn-toggle-switch" id="btnToggleIpadSwitch" title="Bật/Tắt góc nhìn iPad 4:3">
+                      <span class="switch-ball"></span>
+                    </button>
+                  </div>
+                </div>
+                <p class="feature-item-desc">Mở rộng góc nhìn FOV sang tỉ lệ 4:3 như máy tính bảng, nhân vật địch to hơn 40%, cực kỳ dễ headshot.</p>
+                
+                <div class="ipad-controls-box">
+                  <div class="form-row-compact">
+                    <select id="selIpadPreset" class="select-modern">
+                      <option value="1440x1920" selected>iPad Mini / Pro 4:3 (1440 × 1920) - Chuẩn Thi Đấu</option>
+                      <option value="1536x2048">iPad 4:3 Retina (1536 × 2048) - Siêu Nét</option>
+                      <option value="1600x2560">iPad Air 16:10 (1600 × 2560) - Tầm Nhìn Cân Bằng</option>
+                      <option value="custom">Tùy Chỉnh Độ Phân Giải...</option>
+                    </select>
+                  </div>
+                  <div class="ipad-custom-inputs" id="boxIpadCustom" style="display: none;">
+                    <input type="number" id="txtIpadWidth" placeholder="Rộng (VD: 1440)" value="1440">
+                    <input type="number" id="txtIpadHeight" placeholder="Cao (VD: 1920)" value="1920">
+                    <input type="number" id="txtIpadDensity" placeholder="DPI (VD: 320)" value="320">
+                  </div>
+                  <div class="ipad-btn-row">
+                    <button class="btn-action btn-action-sm btn-glow-action" id="btnApplyIpadView">⚡ Áp Dụng Tỉ Lệ iPad</button>
+                    <button class="btn-action btn-action-sm btn-outline" id="btnResetIpadView">Khôi Phục Gốc</button>
+                    <span class="status-chip" id="ipadViewStatus" style="margin-left:auto; align-self:center;">Tỉ lệ gốc</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. AUTO FARM / TOUCH MACRO RECORDER -->
+              <div class="combat-feature-item">
+                <div class="feature-item-header">
+                  <div class="feature-item-title">
+                    <span class="item-emoji">🔁</span>
+                    <strong>Auto Farm & Macro Thao Tác</strong>
+                  </div>
+                  <div class="toggle-switch-wrapper">
+                    <span class="switch-state-text" id="lblMacroState">TẮT</span>
+                    <button class="btn-toggle-switch" id="btnToggleMacroPlay" title="Bật/Dừng phát tự động Macro">
+                      <span class="switch-ball"></span>
+                    </button>
+                  </div>
+                </div>
+                <p class="feature-item-desc">Ghi lại thao tác click chuột/chạm tay trên màn hình và tự động phát lặp lại (farm ải, gacha, điểm danh).</p>
+                
+                <div class="macro-controls-box">
+                  <div class="macro-btn-group">
+                    <button class="btn-record-macro" id="btnToggleRecordMacro">🔴 Bắt Đầu Ghi</button>
+                    <button class="btn-play-macro" id="btnPlayMacro" disabled>▶ Phát Lại</button>
+                    <span class="status-chip" id="macroStatus" style="margin-left:auto; align-self:center;">Chưa có bản ghi</span>
+                  </div>
+                  <div class="macro-config-row">
+                    <select id="selMacroLoop" class="select-modern">
+                      <option value="1">Lặp: 1 lần</option>
+                      <option value="5" selected>Lặp: 5 lần</option>
+                      <option value="10">Lặp: 10 lần</option>
+                      <option value="-1">Lặp: Vô hạn</option>
+                    </select>
+                    <select id="selMacroSpeed" class="select-modern">
+                      <option value="1.0" selected>Tốc độ: 1.0x</option>
+                      <option value="1.5">Tốc độ: 1.5x</option>
+                      <option value="2.0">Tốc độ: 2.0x</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -327,9 +491,15 @@
         <div class="vip-card">
           <div class="vip-header">
             <span class="vip-icon">🎯</span>
-            <div>
+            <div style="flex: 1;">
               <h3>TÂM NGẮM ẢO GAMING (CROSSHAIR HUD)</h3>
               <p class="vip-sub">Tâm ngắm nổi đè lên game, chuột bấm xuyên thấu 100%, hỗ trợ sấy Free Fire / PUBG không cần mở scope!</p>
+            </div>
+            <div class="toggle-switch-wrapper">
+              <span class="switch-state-text" id="lblCrosshairState">TẮT</span>
+              <button class="btn-toggle-switch" id="btnSwitchCrosshair" title="Bật/Tắt Tâm Ngắm Ảo">
+                <span class="switch-ball"></span>
+              </button>
             </div>
           </div>
 
@@ -408,9 +578,15 @@
           <div class="rapid-card">
             <div class="rapid-header">
               <span class="rapid-icon">🔫</span>
-              <div>
+              <div style="flex: 1;">
                 <h4>RAPID FIRE MACRO (AUTO TAP)</h4>
                 <p class="rapid-sub">Sấy đạn liên thanh cho súng gõ từng viên (SKS, SLR, M14, Mini14).</p>
+              </div>
+              <div class="toggle-switch-wrapper">
+                <span class="switch-state-text" id="lblRapidState">TẮT</span>
+                <button class="btn-toggle-switch" id="btnSwitchRapidFire" title="Bật/Tắt Rapid Fire">
+                  <span class="switch-ball"></span>
+                </button>
               </div>
             </div>
             <div class="rapid-control-row">
@@ -430,9 +606,15 @@
           <div class="cooler-card">
             <div class="cooler-header">
               <span class="cooler-icon">❄️</span>
-              <div>
+              <div style="flex: 1;">
                 <h4>CHẾ ĐỘ TẢN NHIỆT PIN (COOLER)</h4>
                 <p class="cooler-sub">Hạ độ sáng màn hình thật về 0 để máy mát lạnh không hạ xung.</p>
+              </div>
+              <div class="toggle-switch-wrapper">
+                <span class="switch-state-text" id="lblCoolerState">TẮT</span>
+                <button class="btn-toggle-switch" id="btnSwitchCooler" title="Bật/Tắt Tản Nhiệt Mát Máy">
+                  <span class="switch-ball"></span>
+                </button>
               </div>
             </div>
             <div class="cooler-action-row">
@@ -443,6 +625,161 @@
         </div>
       </div>
 
+      <!-- 🎯 COLOR AIM ASSIST & ENEMY HIGHLIGHTER -->
+      <div class="vip-card" style="margin-top: 10px;">
+        <div class="vip-header">
+          <span class="vip-icon">🎯</span>
+          <div style="flex: 1;">
+            <h3>COLOR AIM ASSIST & ENEMY HIGHLIGHTER (HỖ TRỢ TÁC CHIẾN)</h3>
+            <p class="vip-sub">Tự động nhận diện màu sắc viền địch/áo địch trong vùng FOV để hỗ trợ di tâm và bộ lọc màu làm nổi bật địch núp bụi cỏ!</p>
+          </div>
+          <div class="toggle-switch-wrapper">
+            <span class="switch-state-text" id="lblColorAssistState">TẮT</span>
+            <button class="btn-toggle-switch" id="btnSwitchColorAssist" title="Bật/Tắt Color Aim Assist">
+              <span class="switch-ball"></span>
+            </button>
+          </div>
+        </div>
+        <div class="combat-assist-grid">
+          <div class="assist-col">
+            <div class="vip-form-item">
+              <label>Hỗ Trợ Bám Tâm (Color Aim Assist):</label>
+              <div class="toggle-row-styled">
+                <button class="btn-action btn-glow-action" id="btnToggleColorAssist">🎯 BẬT COLOR AIM ASSIST</button>
+                <span class="status-chip" id="colorAssistStatus">Đang tắt</span>
+              </div>
+            </div>
+            <div class="vip-form-item">
+              <label>Màu Sắc Nhận Diện Kẻ Địch:</label>
+              <div class="color-tag-buttons">
+                <button class="btn-color-tag active" data-color="red"><span class="c-dot" style="background:#ff3366;"></span> Đỏ (Viền Địch / Máu)</button>
+                <button class="btn-color-tag" data-color="yellow"><span class="c-dot" style="background:#ffee00;"></span> Vàng Neon (Skin)</button>
+                <button class="btn-color-tag" data-color="purple"><span class="c-dot" style="background:#bf5af2;"></span> Tím Dạ Quang</button>
+              </div>
+            </div>
+            <div class="vip-form-item">
+              <label for="rngFovSize">Bán Kính Quét (FOV): <span id="lblFovSize">80 px</span></label>
+              <input type="range" id="rngFovSize" min="40" max="160" value="80">
+            </div>
+          </div>
+          <div class="assist-col">
+            <div class="vip-form-item">
+              <label for="rngSmoothSpeed">Độ Mượt Di Tâm (Smooth): <span id="lblSmoothSpeed">5.0</span></label>
+              <input type="range" id="rngSmoothSpeed" min="1" max="10" value="5">
+            </div>
+            <div class="vip-form-item">
+              <label>Bộ Lọc Màu Nổi Bật Kẻ Địch (Enemy Highlighter Filter):</label>
+              <select id="selEnemyFilter" class="select-modern">
+                <option value="none">Không dùng bộ lọc</option>
+                <option value="vibrance" selected>Digital Vibrance 200% (Đẩy Tươi Kênh Đỏ)</option>
+                <option value="nightvision">Kính Nhìn Đêm (Night Vision / Sáng Góc Tối)</option>
+                <option value="foliage">Khử Chói Cỏ Cây (Địch Núp Lùm Lộ Rõ)</option>
+              </select>
+            </div>
+            <div class="vip-form-item checkbox-modern-item" style="margin-top: 6px;">
+              <label class="checkbox-container">
+                <input type="checkbox" id="chkTriggerBot">
+                <span class="checkmark"></span>
+                <span><strong>Triggerbot:</strong> Tự động nhấp bắn khi tâm ngắm chạm trúng màu địch</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= TAB 3: HIỆU NĂNG & PIN ================= -->
+    <section class="tab-content" id="tabHardware">
+      <!-- HUD REALTIME PIN & NHIỆT ĐỘ -->
+      <div class="hardware-hud-card">
+        <div class="hud-header">
+          <div class="hud-title-left">
+            <span class="hud-icon">⚡</span>
+            <div>
+              <h3>GIÁM SÁT PHẦN CỨNG & PIN THỜI GIAN THỰC</h3>
+              <p class="hud-sub">Theo dõi nhiệt độ chip/pin, điện áp và dòng sạc qua ADB chuẩn đoán.</p>
+            </div>
+          </div>
+          <button class="btn-action btn-outline btn-action-sm" id="btnRefreshBattery">🔄 Đọc Lại</button>
+        </div>
+
+        <div class="hud-metrics-grid">
+          <div class="metric-box">
+            <span class="metric-label">Nhiệt Độ Pin</span>
+            <div class="metric-value-row">
+              <span class="metric-num" id="hudTemp">--.-</span>
+              <span class="metric-unit">°C</span>
+            </div>
+            <span class="metric-badge badge-cool" id="hudTempBadge">Đang đọc...</span>
+          </div>
+
+          <div class="metric-box">
+            <span class="metric-label">Mức Pin Hiện Tại</span>
+            <div class="metric-value-row">
+              <span class="metric-num" id="hudLevel">--</span>
+              <span class="metric-unit">%</span>
+            </div>
+            <div class="hud-battery-bar">
+              <div class="hud-battery-fill" id="hudBatteryFill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="metric-box">
+            <span class="metric-label">Trạng Thái Sạc</span>
+            <div class="metric-value-row">
+              <strong class="metric-text" id="hudStatus">Chưa kết nối</strong>
+            </div>
+            <span class="metric-sub-label" id="hudVoltage">Điện áp: -- mV</span>
+          </div>
+
+          <div class="metric-box">
+            <span class="metric-label">Sức Khỏe Pin</span>
+            <div class="metric-value-row">
+              <strong class="metric-text" id="hudHealth">--</strong>
+            </div>
+            <span class="metric-sub-label" id="hudPowerSource">Nguồn: --</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-two-columns" style="margin-top: 10px;">
+        <!-- CHẾ ĐỘ BỎ QUA SẠC (BYPASS CHARGING) -->
+        <div class="settings-col-card">
+          <div class="section-header-flex">
+            <h3 class="section-title">🔋 Chế Độ Bỏ Qua Sạc (Bypass Charging)</h3>
+            <div class="toggle-switch-wrapper">
+              <span class="switch-state-text" id="lblBypassState">TẮT</span>
+              <button class="btn-toggle-switch" id="btnSwitchBypass" title="Bật/Tắt Bypass Charging">
+                <span class="switch-ball"></span>
+              </button>
+            </div>
+          </div>
+          <p class="feature-item-desc">
+            Ngắt dòng nạp vào cell pin khi cắm sạc, chỉ cấp nguồn điện trực tiếp cho bo mạch CPU. Giúp máy <strong>mát lạnh 100%, không bị chai phồng pin</strong> hay tụt xung FPS khi cày game nhiều giờ!
+          </p>
+          <div class="action-row-mt">
+            <button class="btn-action btn-glow-action" id="btnToggleBypassCharging">❄️ BẬT BYPASS CHARGING</button>
+            <span class="status-chip" id="bypassStatus">Sạc bình thường</span>
+          </div>
+        </div>
+
+        <!-- ÉP TẦN SỐ QUÉT 120HZ / 90HZ -->
+        <div class="settings-col-card">
+          <div class="section-header-flex">
+            <h3 class="section-title">⚡ Ép Tần Số Quét (Force Refresh Rate)</h3>
+            <span class="section-sub-tip">Loại bỏ drop FPS</span>
+          </div>
+          <p class="feature-item-desc">
+            Nhiều máy Android tự giảm tần số quét xuống 60Hz khi nhiệt độ tăng. Lệnh ADB này sẽ ép cứng màn hình luôn chạy ở tần số quét cao nhất.
+          </p>
+          <div class="refresh-rate-buttons">
+            <button class="btn-action btn-action-sm btn-glow-action" id="btnSet120Hz">⚡ Ép 120Hz (Cực Mượt)</button>
+            <button class="btn-action btn-action-sm" id="btnSet90Hz">🚀 Ép 90Hz</button>
+            <button class="btn-action btn-action-sm btn-outline" id="btnReset60Hz">Khôi Phục 60Hz</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ================= TAB 3: CLOUD & PROFILE ================= -->
@@ -510,8 +847,49 @@
 
     </section>
 
-    <!-- ================= TAB 4: TIỆN ÍCH & PHÍM TẮT ================= -->
+    <!-- ================= TAB 4: TIỆN ÍCH & KẾT NỐI KHÔNG DÂY ================= -->
     <section class="tab-content" id="tabFeatures">
+      
+      <!-- 📦 KÉO - THẢ CÀI APK & CHÉP FILE -->
+      <div class="dropzone-card">
+        <div class="dropzone-header">
+          <span class="dropzone-icon">📥</span>
+          <div>
+            <h3>KÉO - THẢ CÀI GAME & CHÉP FILE SIÊU TỐC</h3>
+            <p class="dropzone-sub">Thả file .apk để tự động cài đặt • Thả file ảnh/video/nhạc để chép thẳng vào /sdcard/Download/.</p>
+          </div>
+        </div>
+
+        <div class="dropzone-area" id="apkDropzone">
+          <div class="dropzone-inner">
+            <span class="drop-large-icon">📦</span>
+            <strong class="drop-main-text">KÉO VÀ THẢ FILE VÀO ĐÂY</strong>
+            <span class="drop-sub-text">Hỗ trợ file .APK cài đặt game hoặc file dữ liệu (MP4, PNG, ZIP, MP3...)</span>
+            <input type="file" id="filePickerInput" style="display: none;">
+            <button class="btn-action btn-action-sm btn-outline" id="btnBrowseFile" style="margin-top: 10px;">Hoặc Chọn File Từ Máy Tính</button>
+          </div>
+          <div class="dropzone-progress-bar" id="dropzoneProgress" style="display: none;">
+            <div class="dropzone-progress-fill" id="dropzoneProgressFill" style="width: 0%;"></div>
+            <span class="dropzone-progress-text" id="dropzoneProgressText">Đang xử lý...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 📡 1-CLICK WIRELESS ADB -->
+      <div class="settings-group" style="margin-top: 10px;">
+        <div class="section-header-flex">
+          <h3 class="section-title">📡 1-Click Kết Nối Không Dây (Wireless ADB)</h3>
+          <span class="section-sub-tip">Rút cáp tự do</span>
+        </div>
+        <p class="feature-item-desc">
+          Tự động mở cổng 5555 và kết nối qua Wi-Fi. Bấm xong là có thể rút cáp USB chơi game tự do mà vẫn chiếu màn hình mượt mà!
+        </p>
+        <div class="action-row-mt">
+          <button class="btn-action btn-glow-action" id="btnActivateWirelessAdb">📡 KÍCH HOẠT KHÔNG DÂY (RÚT CÁP)</button>
+          <span class="status-chip" id="wirelessStatusBadge">Đang kết nối qua cáp USB</span>
+        </div>
+      </div>
+
       <div class="settings-group">
         <h3 class="section-title">🕵️ Mẹo Phím Tắt Tàng Hình (Chống Sếp & Khẩn Cấp)</h3>
         <div class="stealth-tips">
@@ -559,6 +937,59 @@
         <h3 class="section-title">Khắc Phục Kết Nối</h3>
         <div class="tool-actions">
           <button class="btn-action btn-outline" id="btnRestartAdb">🔄 Khởi động lại ADB Server</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 5: TRÌNH CHIẾU & STREAMER ================= -->
+    <section class="tab-content" id="tabStream">
+      <!-- QUAY VIDEO MP4 BẰNG GPU MÁY TÍNH -->
+      <div class="stream-card">
+        <div class="stream-header">
+          <span class="stream-icon">🔴</span>
+          <div>
+            <h3>QUAY VIDEO TRẬN ĐẤU (DIRECT GPU RECORDING)</h3>
+            <p class="stream-sub">Quay video chuẩn MP4 chất lượng gốc trực tiếp từ card đồ họa máy tính. Điện thoại 0% hao tài nguyên, không nóng máy!</p>
+          </div>
+        </div>
+
+        <div class="stream-options-box">
+          <div class="vip-form-item checkbox-modern-item">
+            <label class="checkbox-container">
+              <input type="checkbox" id="chkAutoRecord">
+              <span class="checkmark"></span>
+              <span><strong>Tự động ghi hình MP4 khi bấm "BẮT ĐẦU CHIẾU MÀN HÌNH"</strong></span>
+            </label>
+          </div>
+
+          <div class="stream-record-status-row" style="margin-top: 10px;">
+            <button class="btn-action btn-outline btn-action-sm" id="btnOpenRecordings">📁 Mở Thư Mục Video Đã Quay</button>
+            <span class="status-chip" id="recordStatusChip">Đang sẵn sàng</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BẬT/TẮT HIỂN THỊ CHẤM CẢM ỨNG (SHOW TOUCHES) -->
+      <div class="stream-card" style="margin-top: 10px;">
+        <div class="stream-header">
+          <span class="stream-icon">⚪</span>
+          <div style="flex: 1;">
+            <h3>HIỂN THỊ CHẤM TRÒN CẢM ỨNG (SHOW TOUCHES)</h3>
+            <p class="stream-sub">Hiện chấm tròn toạ độ tay chạm trên màn hình điện thoại (rất trực quan khi livestream và quay clip hướng dẫn).</p>
+          </div>
+          <div class="toggle-switch-wrapper">
+            <span class="switch-state-text" id="lblTouchesState">TẮT</span>
+            <button class="btn-toggle-switch" id="btnSwitchTouches" title="Bật/Tắt Chấm Cảm Ứng">
+              <span class="switch-ball"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="stream-options-box">
+          <div class="action-row-mt">
+            <button class="btn-action btn-glow-action" id="btnToggleShowTouches">⚪ BẬT HIỂN THỊ CHẠM TAY</button>
+            <span class="status-chip" id="touchesStatusBadge">Đang tắt</span>
+          </div>
         </div>
       </div>
     </section>

@@ -81,6 +81,21 @@ tabButtons.forEach(btn => {
   });
 });
 
+// Sub-Tabs trong Tab 1 (Chiến Game)
+const subTabButtons = document.querySelectorAll('.sub-tab-btn');
+const subTabPanes = document.querySelectorAll('.sub-tab-pane');
+
+subTabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    subTabButtons.forEach(b => b.classList.remove('active'));
+    subTabPanes.forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const targetId = btn.getAttribute('data-subtab');
+    const targetPane = document.getElementById(targetId);
+    if (targetPane) targetPane.classList.add('active');
+  });
+});
+
 // Controls: 2 Nút Chiếu Màn Hình Tách Bạch & Panda
 const elBtnStartMirror = document.getElementById('btnStartMirror');
 const elBtnMirrorTitle = document.getElementById('btnMirrorTitle');
@@ -333,7 +348,8 @@ async function startCurrentControl() {
     uhidInput: elChkUhidInput ? elChkUhidInput.checked : true,
     turnScreenOff: elChkTurnScreenOff ? elChkTurnScreenOff.checked : false,
     forwardAudio: elChkForwardAudio ? elChkForwardAudio.checked : true,
-    stayAwake: elChkStayAwake ? elChkStayAwake.checked : true
+    stayAwake: elChkStayAwake ? elChkStayAwake.checked : true,
+    recordGameplay: !!(document.getElementById('chkAutoRecord') && document.getElementById('chkAutoRecord').checked)
   };
 
   updateFooterLog(`Đang kích hoạt [${activeProfile ? activeProfile.name : 'Game'}]: ${options.codec.toUpperCase()} | ${options.fps} FPS | Đệm: ${options.displayBuffer}ms...`);
@@ -810,10 +826,73 @@ function renderCrosshairPreview() {
   elPreviewCrosshairSvg.innerHTML = innerHTML;
 }
 
+// Elements cho toggle switches VIP
+const elBtnSwitchCrosshair = document.getElementById('btnSwitchCrosshair');
+const elLblCrosshairState = document.getElementById('lblCrosshairState');
+const elBtnSwitchCooler = document.getElementById('btnSwitchCooler');
+const elLblCoolerState = document.getElementById('lblCoolerState');
+const elBtnSwitchRapidFire = document.getElementById('btnSwitchRapidFire');
+const elLblRapidState = document.getElementById('lblRapidState');
+
+function updateCrosshairSwitchUI(enabled) {
+  if (elBtnSwitchCrosshair) {
+    if (enabled) elBtnSwitchCrosshair.classList.add('active');
+    else elBtnSwitchCrosshair.classList.remove('active');
+  }
+  if (elLblCrosshairState) {
+    elLblCrosshairState.textContent = enabled ? 'BẬT' : 'TẮT';
+    if (enabled) elLblCrosshairState.classList.add('active');
+    else elLblCrosshairState.classList.remove('active');
+  }
+}
+
+function updateCoolerSwitchUI(active) {
+  if (elBtnSwitchCooler) {
+    if (active) elBtnSwitchCooler.classList.add('active');
+    else elBtnSwitchCooler.classList.remove('active');
+  }
+  if (elLblCoolerState) {
+    elLblCoolerState.textContent = active ? 'BẬT' : 'TẮT';
+    if (active) elLblCoolerState.classList.add('active');
+    else elLblCoolerState.classList.remove('active');
+  }
+}
+
+function updateRapidSwitchUI(active) {
+  if (elBtnSwitchRapidFire) {
+    if (active) elBtnSwitchRapidFire.classList.add('active');
+    else elBtnSwitchRapidFire.classList.remove('active');
+  }
+  if (elLblRapidState) {
+    elLblRapidState.textContent = active ? 'BẬT' : 'TẮT';
+    if (active) elLblRapidState.classList.add('active');
+    else elLblRapidState.classList.remove('active');
+  }
+}
+
+if (elBtnSwitchCrosshair) {
+  elBtnSwitchCrosshair.addEventListener('click', () => {
+    if (elBtnToggleCrosshair) elBtnToggleCrosshair.click();
+  });
+}
+
+if (elBtnSwitchCooler) {
+  elBtnSwitchCooler.addEventListener('click', () => {
+    if (elBtnToggleCooler) elBtnToggleCooler.click();
+  });
+}
+
+if (elBtnSwitchRapidFire) {
+  elBtnSwitchRapidFire.addEventListener('click', () => {
+    if (elBtnToggleRapidFire) elBtnToggleRapidFire.click();
+  });
+}
+
 elBtnToggleCrosshair.addEventListener('click', async () => {
   crosshairConfig.enabled = !crosshairConfig.enabled;
   const res = await window.api.toggleCrosshair(crosshairConfig.enabled);
   if (res.success) {
+    updateCrosshairSwitchUI(res.enabled);
     if (res.enabled) {
       elBtnToggleCrosshair.classList.add('active');
       elBtnToggleCrosshair.textContent = '❌ TẮT TÂM NGẮM ẢO';
@@ -867,6 +946,7 @@ elBtnToggleCooler.addEventListener('click', async () => {
   isCoolerActive = !isCoolerActive;
   const res = await window.api.togglePhoneCooler({ deviceId: currentDeviceId, enable: isCoolerActive });
   if (res.success) {
+    updateCoolerSwitchUI(res.coolerActive);
     if (res.coolerActive) {
       elBtnToggleCooler.classList.add('active');
       elBtnToggleCooler.textContent = '☀️ TẮT TẢN NHIỆT (KHÔI PHỤC ĐỘ SÁNG)';
@@ -907,6 +987,7 @@ if (elBtnToggleRapidFire) {
     isRapidFireActive = !isRapidFireActive;
     const cps = elSelRapidCps ? parseInt(elSelRapidCps.value) : 16;
     const res = await window.api.toggleRapidFire({ enabled: isRapidFireActive, clicksPerSec: cps });
+    updateRapidSwitchUI(res.enabled);
     if (res.enabled) {
       elBtnToggleRapidFire.classList.add('active');
       elBtnToggleRapidFire.textContent = '🛑 DỪNG RAPID FIRE MACRO';
@@ -973,6 +1054,681 @@ elBtnRefresh.addEventListener('click', () => {
   updateFooterLog('Đã quét lại danh sách cổng kết nối.');
 });
 
+// ================= 🎯 RECOIL CONTROL (GHÌM TÂM TỰ ĐỘNG) =================
+let isRecoilActive = false;
+const elBtnToggleRecoil = document.getElementById('btnToggleRecoil');
+const elLblRecoilState = document.getElementById('lblRecoilState');
+const elBtnToggleRecoilQuick = document.getElementById('btnToggleRecoilQuick');
+const elLblRecoilStateQuick = document.getElementById('lblRecoilStateQuick');
+const elRngRecoilY = document.getElementById('rngRecoilY');
+const elLblRecoilY = document.getElementById('lblRecoilY');
+const elRngRecoilJitter = document.getElementById('rngRecoilJitter');
+const elLblRecoilJitter = document.getElementById('lblRecoilJitter');
+const elRngRecoilDelay = document.getElementById('rngRecoilDelay');
+const elLblRecoilDelay = document.getElementById('lblRecoilDelay');
+
+function updateRecoilUI() {
+  if (elBtnToggleRecoil) {
+    if (isRecoilActive) elBtnToggleRecoil.classList.add('active');
+    else elBtnToggleRecoil.classList.remove('active');
+  }
+  if (elLblRecoilState) {
+    elLblRecoilState.textContent = isRecoilActive ? 'BẬT' : 'TẮT';
+    if (isRecoilActive) elLblRecoilState.classList.add('active');
+    else elLblRecoilState.classList.remove('active');
+  }
+  if (elBtnToggleRecoilQuick) {
+    if (isRecoilActive) elBtnToggleRecoilQuick.classList.add('active');
+    else elBtnToggleRecoilQuick.classList.remove('active');
+  }
+  if (elLblRecoilStateQuick) {
+    elLblRecoilStateQuick.textContent = isRecoilActive ? 'BẬT' : 'TẮT';
+    if (isRecoilActive) elLblRecoilStateQuick.classList.add('active');
+    else elLblRecoilStateQuick.classList.remove('active');
+  }
+}
+
+async function handleToggleRecoil(forceState) {
+  isRecoilActive = forceState !== undefined ? forceState : !isRecoilActive;
+  updateRecoilUI();
+  const pullY = parseInt(elRngRecoilY ? elRngRecoilY.value : 4) || 4;
+  const jitterX = parseInt(elRngRecoilJitter ? elRngRecoilJitter.value : 1) || 1;
+  const delayMs = parseInt(elRngRecoilDelay ? elRngRecoilDelay.value : 120) || 120;
+  const res = await window.api.toggleRecoil({ enabled: isRecoilActive, pullY, jitterX, delayMs, intervalMs: 25 });
+  updateFooterLog(res.message);
+}
+
+if (elBtnToggleRecoil) {
+  elBtnToggleRecoil.addEventListener('click', () => handleToggleRecoil());
+}
+
+if (elBtnToggleRecoilQuick) {
+  elBtnToggleRecoilQuick.addEventListener('click', () => handleToggleRecoil());
+}
+
+if (elRngRecoilY) {
+  elRngRecoilY.addEventListener('input', () => {
+    if (elLblRecoilY) elLblRecoilY.textContent = `${elRngRecoilY.value} px`;
+    window.api.updateRecoilConfig({ pullY: parseInt(elRngRecoilY.value) });
+  });
+}
+
+if (elRngRecoilJitter) {
+  elRngRecoilJitter.addEventListener('input', () => {
+    if (elLblRecoilJitter) elLblRecoilJitter.textContent = `±${elRngRecoilJitter.value} px`;
+    window.api.updateRecoilConfig({ jitterX: parseInt(elRngRecoilJitter.value) });
+  });
+}
+
+if (elRngRecoilDelay) {
+  elRngRecoilDelay.addEventListener('input', () => {
+    if (elLblRecoilDelay) elLblRecoilDelay.textContent = `${elRngRecoilDelay.value} ms`;
+    window.api.updateRecoilConfig({ delayMs: parseInt(elRngRecoilDelay.value) });
+  });
+}
+
+// Phím tắt F6 bật/tắt ghìm tâm siêu tốc
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'F6') {
+    e.preventDefault();
+    handleToggleRecoil();
+  }
+});
+
+// ================= 📱 KÉO GIÃN MÀN HÌNH TỈ LỆ IPAD (4:3) =================
+const elSelIpadPreset = document.getElementById('selIpadPreset');
+const elBoxIpadCustom = document.getElementById('boxIpadCustom');
+const elTxtIpadWidth = document.getElementById('txtIpadWidth');
+const elTxtIpadHeight = document.getElementById('txtIpadHeight');
+const elTxtIpadDensity = document.getElementById('txtIpadDensity');
+const elBtnApplyIpadView = document.getElementById('btnApplyIpadView');
+const elBtnResetIpadView = document.getElementById('btnResetIpadView');
+const elIpadViewStatus = document.getElementById('ipadViewStatus');
+const elBtnToggleIpadSwitch = document.getElementById('btnToggleIpadSwitch');
+const elLblIpadState = document.getElementById('lblIpadState');
+
+let isIpadActive = false;
+
+function updateIpadSwitchUI(active) {
+  isIpadActive = active;
+  if (elBtnToggleIpadSwitch) {
+    if (active) elBtnToggleIpadSwitch.classList.add('active');
+    else elBtnToggleIpadSwitch.classList.remove('active');
+  }
+  if (elLblIpadState) {
+    elLblIpadState.textContent = active ? 'BẬT' : 'TẮT';
+    if (active) elLblIpadState.classList.add('active');
+    else elLblIpadState.classList.remove('active');
+  }
+}
+
+if (elBtnToggleIpadSwitch) {
+  elBtnToggleIpadSwitch.addEventListener('click', () => {
+    if (!isIpadActive) {
+      if (elBtnApplyIpadView) elBtnApplyIpadView.click();
+    } else {
+      if (elBtnResetIpadView) elBtnResetIpadView.click();
+    }
+  });
+}
+
+if (elSelIpadPreset) {
+  elSelIpadPreset.addEventListener('change', () => {
+    if (elSelIpadPreset.value === 'custom') {
+      if (elBoxIpadCustom) elBoxIpadCustom.style.display = 'grid';
+    } else {
+      if (elBoxIpadCustom) elBoxIpadCustom.style.display = 'none';
+    }
+  });
+}
+
+if (elBtnApplyIpadView) {
+  elBtnApplyIpadView.addEventListener('click', async () => {
+    let width = 1440, height = 1920, density = 320;
+    if (elSelIpadPreset.value === 'custom') {
+      width = parseInt(elTxtIpadWidth.value) || 1440;
+      height = parseInt(elTxtIpadHeight.value) || 1920;
+      density = parseInt(elTxtIpadDensity.value) || 320;
+    } else {
+      const parts = elSelIpadPreset.value.split('x');
+      width = parseInt(parts[0]) || 1440;
+      height = parseInt(parts[1]) || 1920;
+      density = (width >= 1536) ? 360 : 320;
+    }
+    updateFooterLog(`Đang chỉnh màn hình sang tỉ lệ iPad ${width}×${height}...`);
+    const res = await window.api.setIpadView({ width, height, density, deviceId: currentDeviceId });
+    updateFooterLog(res.message);
+    if (elIpadViewStatus) {
+      elIpadViewStatus.textContent = `iPad (${width}×${height})`;
+      elIpadViewStatus.classList.add('active');
+    }
+    updateIpadSwitchUI(true);
+    alert(res.message);
+  });
+}
+
+if (elBtnResetIpadView) {
+  elBtnResetIpadView.addEventListener('click', async () => {
+    updateFooterLog('Đang khôi phục màn hình điện thoại về mặc định...');
+    const res = await window.api.resetIpadView({ deviceId: currentDeviceId });
+    updateFooterLog(res.message);
+    if (elIpadViewStatus) {
+      elIpadViewStatus.textContent = 'Tỉ lệ gốc';
+      elIpadViewStatus.classList.remove('active');
+    }
+    updateIpadSwitchUI(false);
+    alert(res.message);
+  });
+}
+
+// ================= 🔁 AUTO FARM / TOUCH MACRO RECORDER =================
+const elBtnToggleRecordMacro = document.getElementById('btnToggleRecordMacro');
+const elBtnPlayMacro = document.getElementById('btnPlayMacro');
+const elSelMacroLoop = document.getElementById('selMacroLoop');
+const elSelMacroSpeed = document.getElementById('selMacroSpeed');
+const elMacroStatus = document.getElementById('macroStatus');
+const elBtnToggleMacroPlay = document.getElementById('btnToggleMacroPlay');
+const elLblMacroState = document.getElementById('lblMacroState');
+
+let isRecordingMacro = false;
+let isPlayingMacro = false;
+let localMacroEvents = [];
+let macroRecordStartTime = 0;
+
+function updateMacroSwitchUI(active) {
+  if (elBtnToggleMacroPlay) {
+    if (active) elBtnToggleMacroPlay.classList.add('active');
+    else elBtnToggleMacroPlay.classList.remove('active');
+  }
+  if (elLblMacroState) {
+    elLblMacroState.textContent = active ? 'BẬT' : 'TẮT';
+    if (active) elLblMacroState.classList.add('active');
+    else elLblMacroState.classList.remove('active');
+  }
+}
+
+if (elBtnToggleMacroPlay) {
+  elBtnToggleMacroPlay.addEventListener('click', () => {
+    if (elBtnPlayMacro) elBtnPlayMacro.click();
+  });
+}
+
+if (elBtnToggleRecordMacro) {
+  elBtnToggleRecordMacro.addEventListener('click', async () => {
+    if (!isRecordingMacro) {
+      isRecordingMacro = true;
+      localMacroEvents = [];
+      macroRecordStartTime = Date.now();
+      elBtnToggleRecordMacro.classList.add('recording');
+      elBtnToggleRecordMacro.textContent = '⏹ DỪNG GHI';
+      if (elMacroStatus) {
+        elMacroStatus.textContent = 'Đang ghi thao tác...';
+        elMacroStatus.classList.add('active');
+      }
+      await window.api.startMacroRecord();
+      updateFooterLog('🔴 Bắt đầu ghi thao tác chuột! Hãy click trên màn hình game.');
+    } else {
+      isRecordingMacro = false;
+      elBtnToggleRecordMacro.classList.remove('recording');
+      elBtnToggleRecordMacro.textContent = '🔴 Bắt Đầu Ghi';
+      const res = await window.api.stopMacroRecord();
+      const count = localMacroEvents.length;
+      if (elMacroStatus) {
+        elMacroStatus.textContent = count > 0 ? `Đã lưu ${count} thao tác` : 'Chưa có bản ghi';
+        if (count === 0) elMacroStatus.classList.remove('active');
+      }
+      if (elBtnPlayMacro) elBtnPlayMacro.disabled = (count === 0);
+      updateFooterLog(`⏹ Đã hoàn tất ghi! Tổng cộng: ${count} thao tác.`);
+    }
+  });
+}
+
+// Lắng nghe click trong cửa sổ khi đang ghi macro
+window.addEventListener('mousedown', (e) => {
+  if (isRecordingMacro) {
+    const now = Date.now();
+    const delay = localMacroEvents.length === 0 ? 100 : Math.min(3000, now - macroRecordStartTime);
+    macroRecordStartTime = now;
+    localMacroEvents.push({
+      type: 'tap',
+      x: e.clientX,
+      y: e.clientY,
+      delay: Math.max(50, delay)
+    });
+    if (elMacroStatus) {
+      elMacroStatus.textContent = `Đang ghi: ${localMacroEvents.length} cú nhấp`;
+    }
+  }
+});
+
+if (elBtnPlayMacro) {
+  elBtnPlayMacro.addEventListener('click', async () => {
+    if (!isPlayingMacro) {
+      if (localMacroEvents.length === 0) return alert('Chưa có thao tác nào được ghi!');
+      isPlayingMacro = true;
+      elBtnPlayMacro.textContent = '⏹ DỪNG PHÁT';
+      updateMacroSwitchUI(true);
+      const loopCount = parseInt(elSelMacroLoop ? elSelMacroLoop.value : 5) || 5;
+      const speed = parseFloat(elSelMacroSpeed ? elSelMacroSpeed.value : 1.0) || 1.0;
+      updateFooterLog(`▶ Đang tự động phát lại ${localMacroEvents.length} thao tác (Lặp: ${loopCount}, Tốc độ: ${speed}x)...`);
+      const res = await window.api.playMacro({
+        events: localMacroEvents,
+        loopCount,
+        speed,
+        cooldownMs: 800,
+        deviceId: currentDeviceId
+      });
+      updateFooterLog(res.message);
+      isPlayingMacro = false;
+      elBtnPlayMacro.textContent = '▶ Phát Lại';
+      updateMacroSwitchUI(false);
+    } else {
+      isPlayingMacro = false;
+      elBtnPlayMacro.textContent = '▶ Phát Lại';
+      updateMacroSwitchUI(false);
+      const res = await window.api.stopMacroPlay();
+      updateFooterLog(res.message);
+    }
+  });
+}
+
+// ================= ⚡ HARDWARE & BATTERY HUD =================
+const elBtnRefreshBattery = document.getElementById('btnRefreshBattery');
+const elHudTemp = document.getElementById('hudTemp');
+const elHudTempBadge = document.getElementById('hudTempBadge');
+const elHudLevel = document.getElementById('hudLevel');
+const elHudBatteryFill = document.getElementById('hudBatteryFill');
+const elHudStatus = document.getElementById('hudStatus');
+const elHudVoltage = document.getElementById('hudVoltage');
+const elHudHealth = document.getElementById('hudHealth');
+const elHudPowerSource = document.getElementById('hudPowerSource');
+const elBtnToggleBypassCharging = document.getElementById('btnToggleBypassCharging');
+const elBypassStatus = document.getElementById('bypassStatus');
+const elBtnSet120Hz = document.getElementById('btnSet120Hz');
+const elBtnSet90Hz = document.getElementById('btnSet90Hz');
+const elReset60Hz = document.getElementById('btnReset60Hz');
+
+let isBypassChargingActive = false;
+
+async function refreshBatteryStats() {
+  if (!currentDeviceId) return;
+  try {
+    const res = await window.api.getBatteryInfo({ deviceId: currentDeviceId });
+    if (res.success && res.battery) {
+      const b = res.battery;
+      if (elHudLevel) elHudLevel.textContent = b.level;
+      if (elHudBatteryFill) {
+        elHudBatteryFill.style.width = `${b.level}%`;
+        if (b.level <= 20) {
+          elHudBatteryFill.style.background = 'linear-gradient(90deg, #ff3366, #f59e0b)';
+        } else {
+          elHudBatteryFill.style.background = 'linear-gradient(90deg, #00f2fe, #00f5d4)';
+        }
+      }
+      if (elHudTemp) elHudTemp.textContent = b.tempC || '--';
+      if (elHudTempBadge) {
+        const temp = parseFloat(b.tempC) || 0;
+        if (temp > 42) {
+          elHudTempBadge.textContent = 'Quá Nhiệt (>42°C)';
+          elHudTempBadge.className = 'metric-badge badge-hot';
+        } else if (temp > 38) {
+          elHudTempBadge.textContent = 'Hơi Ấm (38-42°C)';
+          elHudTempBadge.className = 'metric-badge badge-warm';
+        } else {
+          elHudTempBadge.textContent = 'Mát Mẻ (<38°C)';
+          elHudTempBadge.className = 'metric-badge badge-cool';
+        }
+      }
+      if (elHudStatus) elHudStatus.textContent = b.status || 'Bình thường';
+      if (elHudVoltage) elHudVoltage.textContent = `Điện áp: ${b.voltage} mV`;
+      if (elHudHealth) elHudHealth.textContent = b.health || 'Tốt';
+      if (elHudPowerSource) {
+        elHudPowerSource.textContent = b.acPowered ? 'Nguồn: Củ sạc nhanh AC' : (b.usbPowered ? 'Nguồn: Cổng USB PC' : 'Nguồn: Đang dùng pin');
+      }
+    }
+  } catch (e) {}
+}
+
+if (elBtnRefreshBattery) {
+  elBtnRefreshBattery.addEventListener('click', () => {
+    updateFooterLog('Đang làm mới thông số pin & nhiệt độ...');
+    refreshBatteryStats();
+  });
+}
+
+const elBtnSwitchBypass = document.getElementById('btnSwitchBypass');
+const elLblBypassState = document.getElementById('lblBypassState');
+
+function updateBypassSwitchUI(active) {
+  if (elBtnSwitchBypass) {
+    if (active) elBtnSwitchBypass.classList.add('active');
+    else elBtnSwitchBypass.classList.remove('active');
+  }
+  if (elLblBypassState) {
+    elLblBypassState.textContent = active ? 'BẬT' : 'TẮT';
+    if (active) elLblBypassState.classList.add('active');
+    else elLblBypassState.classList.remove('active');
+  }
+}
+
+if (elBtnSwitchBypass) {
+  elBtnSwitchBypass.addEventListener('click', () => {
+    if (elBtnToggleBypassCharging) elBtnToggleBypassCharging.click();
+  });
+}
+
+if (elBtnToggleBypassCharging) {
+  elBtnToggleBypassCharging.addEventListener('click', async () => {
+    isBypassChargingActive = !isBypassChargingActive;
+    updateFooterLog('Đang chuyển đổi trạng thái Bypass Charging...');
+    const res = await window.api.toggleBypassCharging({ enabled: isBypassChargingActive, deviceId: currentDeviceId });
+    updateBypassSwitchUI(res.enabled);
+    if (res.enabled) {
+      elBtnToggleBypassCharging.textContent = '⚡ KHÔI PHỤC SẠC PIN';
+      elBtnToggleBypassCharging.classList.add('active');
+      if (elBypassStatus) {
+        elBypassStatus.textContent = 'Bypass (Chống Nóng 100%)';
+        elBypassStatus.classList.add('active');
+      }
+    } else {
+      elBtnToggleBypassCharging.textContent = '❄️ BẬT BYPASS CHARGING';
+      elBtnToggleBypassCharging.classList.remove('active');
+      if (elBypassStatus) {
+        elBypassStatus.textContent = 'Sạc bình thường';
+        elBypassStatus.classList.remove('active');
+      }
+    }
+    updateFooterLog(res.message);
+    refreshBatteryStats();
+  });
+}
+
+if (elBtnSet120Hz) {
+  elBtnSet120Hz.addEventListener('click', async () => {
+    updateFooterLog('Đang ép tần số quét 120Hz qua ADB...');
+    const res = await window.api.setRefreshRate({ rate: 120, deviceId: currentDeviceId });
+    updateFooterLog(res.message);
+    alert(res.message);
+  });
+}
+
+if (elBtnSet90Hz) {
+  elBtnSet90Hz.addEventListener('click', async () => {
+    updateFooterLog('Đang ép tần số quét 90Hz qua ADB...');
+    const res = await window.api.setRefreshRate({ rate: 90, deviceId: currentDeviceId });
+    updateFooterLog(res.message);
+    alert(res.message);
+  });
+}
+
+if (elReset60Hz) {
+  elReset60Hz.addEventListener('click', async () => {
+    updateFooterLog('Đang khôi phục tần số quét 60Hz...');
+    const res = await window.api.setRefreshRate({ rate: 'reset', deviceId: currentDeviceId });
+    updateFooterLog(res.message);
+    alert(res.message);
+  });
+}
+
+// ================= 📦 FILE DRAG & DROP & 1-CLICK WIRELESS ADB =================
+const elApkDropzone = document.getElementById('apkDropzone');
+const elFilePickerInput = document.getElementById('filePickerInput');
+const elBtnBrowseFile = document.getElementById('btnBrowseFile');
+const elDropzoneProgress = document.getElementById('dropzoneProgress');
+const elDropzoneProgressFill = document.getElementById('dropzoneProgressFill');
+const elDropzoneProgressText = document.getElementById('dropzoneProgressText');
+const elBtnActivateWirelessAdb = document.getElementById('btnActivateWirelessAdb');
+const elWirelessStatusBadge = document.getElementById('wirelessStatusBadge');
+
+async function handleFileProcess(file) {
+  if (!file || !file.path) return;
+  if (!currentDeviceId) {
+    return alert('Chưa có điện thoại nào kết nối! Hãy cắm cáp USB trước.');
+  }
+
+  const isApk = file.name.toLowerCase().endsWith('.apk');
+  if (elDropzoneProgress) elDropzoneProgress.style.display = 'block';
+  if (elDropzoneProgressFill) elDropzoneProgressFill.style.width = '30%';
+  if (elDropzoneProgressText) elDropzoneProgressText.textContent = isApk ? `Đang cài đặt ${file.name}...` : `Đang chép ${file.name}...`;
+
+  if (isApk) {
+    updateFooterLog(`📦 Đang nạp và cài đặt file APK: ${file.name}...`);
+    const res = await window.api.installApk({ filePath: file.path, deviceId: currentDeviceId });
+    if (elDropzoneProgressFill) elDropzoneProgressFill.style.width = '100%';
+    if (elDropzoneProgressText) elDropzoneProgressText.textContent = res.success ? 'Cài đặt thành công!' : 'Lỗi cài đặt!';
+    updateFooterLog(res.message);
+    setTimeout(() => { if (elDropzoneProgress) elDropzoneProgress.style.display = 'none'; }, 3000);
+    alert(res.message);
+  } else {
+    updateFooterLog(`📁 Đang chép file vào /sdcard/Download/: ${file.name}...`);
+    const res = await window.api.pushFileToPhone({ filePath: file.path, deviceId: currentDeviceId });
+    if (elDropzoneProgressFill) elDropzoneProgressFill.style.width = '100%';
+    if (elDropzoneProgressText) elDropzoneProgressText.textContent = res.success ? 'Chép file thành công!' : 'Lỗi chép file!';
+    updateFooterLog(res.message);
+    setTimeout(() => { if (elDropzoneProgress) elDropzoneProgress.style.display = 'none'; }, 3000);
+    alert(res.message);
+  }
+}
+
+if (elApkDropzone) {
+  ['dragenter', 'dragover'].forEach(name => {
+    elApkDropzone.addEventListener(name, (e) => {
+      e.preventDefault();
+      elApkDropzone.classList.add('dragover');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(name => {
+    elApkDropzone.addEventListener(name, (e) => {
+      e.preventDefault();
+      elApkDropzone.classList.remove('dragover');
+    });
+  });
+
+  elApkDropzone.addEventListener('drop', (e) => {
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileProcess(e.dataTransfer.files[0]);
+    }
+  });
+}
+
+if (elBtnBrowseFile && elFilePickerInput) {
+  elBtnBrowseFile.addEventListener('click', () => elFilePickerInput.click());
+  elFilePickerInput.addEventListener('change', () => {
+    if (elFilePickerInput.files && elFilePickerInput.files.length > 0) {
+      handleFileProcess(elFilePickerInput.files[0]);
+    }
+  });
+}
+
+if (elBtnActivateWirelessAdb) {
+  elBtnActivateWirelessAdb.addEventListener('click', async () => {
+    updateFooterLog('📡 Đang kích hoạt kết nối không dây qua cổng 5555...');
+    elBtnActivateWirelessAdb.disabled = true;
+    elBtnActivateWirelessAdb.textContent = '⏳ Đang dò IP và kết nối...';
+    const res = await window.api.activateWirelessAdb({ deviceId: currentDeviceId });
+    elBtnActivateWirelessAdb.disabled = false;
+    elBtnActivateWirelessAdb.textContent = '📡 KÍCH HOẠT KHÔNG DÂY (RÚT CÁP)';
+    if (res.success) {
+      if (elWirelessStatusBadge) {
+        elWirelessStatusBadge.textContent = `Không Dây (${res.ip}:5555)`;
+        elWirelessStatusBadge.classList.add('active');
+      }
+      updateFooterLog(res.message);
+      updateDeviceList();
+      alert(`KẾT NỐI KHÔNG DÂY THÀNH CÔNG!\n\n${res.message}\n\nBạn có thể rút dây cáp USB ngay bây giờ mà vẫn tiếp tục chơi game và chiếu màn hình.`);
+    } else {
+      updateFooterLog(res.message);
+      alert(res.message);
+    }
+  });
+}
+
+// ================= 🎥 STREAMER & CONTENT CREATOR =================
+const elBtnOpenRecordings = document.getElementById('btnOpenRecordings');
+const elBtnToggleShowTouches = document.getElementById('btnToggleShowTouches');
+const elTouchesStatusBadge = document.getElementById('touchesStatusBadge');
+
+let isShowTouchesActive = false;
+
+if (elBtnOpenRecordings) {
+  elBtnOpenRecordings.addEventListener('click', async () => {
+    await window.api.openRecordingsFolder();
+    updateFooterLog('Đã mở thư mục Recordings chứa video đã quay.');
+  });
+}
+
+const elBtnSwitchTouches = document.getElementById('btnSwitchTouches');
+const elLblTouchesState = document.getElementById('lblTouchesState');
+
+function updateTouchesSwitchUI(active) {
+  if (elBtnSwitchTouches) {
+    if (active) elBtnSwitchTouches.classList.add('active');
+    else elBtnSwitchTouches.classList.remove('active');
+  }
+  if (elLblTouchesState) {
+    elLblTouchesState.textContent = active ? 'BẬT' : 'TẮT';
+    if (active) elLblTouchesState.classList.add('active');
+    else elLblTouchesState.classList.remove('active');
+  }
+}
+
+if (elBtnSwitchTouches) {
+  elBtnSwitchTouches.addEventListener('click', () => {
+    if (elBtnToggleShowTouches) elBtnToggleShowTouches.click();
+  });
+}
+
+if (elBtnToggleShowTouches) {
+  elBtnToggleShowTouches.addEventListener('click', async () => {
+    isShowTouchesActive = !isShowTouchesActive;
+    updateFooterLog('Đang thay đổi cài đặt hiển thị chạm tay...');
+    const res = await window.api.toggleShowTouches({ enabled: isShowTouchesActive, deviceId: currentDeviceId });
+    updateTouchesSwitchUI(res.enabled);
+    if (res.enabled) {
+      elBtnToggleShowTouches.textContent = '⚪ TẮT HIỂN THỊ CHẠM';
+      if (elTouchesStatusBadge) {
+        elTouchesStatusBadge.textContent = 'Đang hiển thị';
+        elTouchesStatusBadge.classList.add('active');
+      }
+    } else {
+      elBtnToggleShowTouches.textContent = '⚪ BẬT HIỂN THỊ CHẠM TAY';
+      if (elTouchesStatusBadge) {
+        elTouchesStatusBadge.textContent = 'Đang tắt';
+        elTouchesStatusBadge.classList.remove('active');
+      }
+    }
+    updateFooterLog(res.message);
+  });
+}
+
+// ================= 🎨 COMBAT ASSIST: COLOR AIM & ENEMY HIGHLIGHTER =================
+const elBtnToggleColorAssist = document.getElementById('btnToggleColorAssist');
+const elBtnSwitchColorAssist = document.getElementById('btnSwitchColorAssist');
+const elLblColorAssistState = document.getElementById('lblColorAssistState');
+const elColorAssistStatus = document.getElementById('colorAssistStatus');
+const elRngFovSize = document.getElementById('rngFovSize');
+const elLblFovSize = document.getElementById('lblFovSize');
+const elRngSmoothSpeed = document.getElementById('rngSmoothSpeed');
+const elLblSmoothSpeed = document.getElementById('lblSmoothSpeed');
+const elSelEnemyFilter = document.getElementById('selEnemyFilter');
+const elChkTriggerBot = document.getElementById('chkTriggerBot');
+
+let isColorAssistActive = false;
+let colorAssistSettings = {
+  enabled: false,
+  color: 'red',
+  fovSize: 80,
+  smoothSpeed: 5,
+  triggerBot: false,
+  filterMode: 'vibrance'
+};
+
+function updateColorAssistSwitchUI(active) {
+  if (elBtnSwitchColorAssist) {
+    if (active) elBtnSwitchColorAssist.classList.add('active');
+    else elBtnSwitchColorAssist.classList.remove('active');
+  }
+  if (elLblColorAssistState) {
+    elLblColorAssistState.textContent = active ? 'BẬT' : 'TẮT';
+    if (active) elLblColorAssistState.classList.add('active');
+    else elLblColorAssistState.classList.remove('active');
+  }
+}
+
+if (elBtnSwitchColorAssist) {
+  elBtnSwitchColorAssist.addEventListener('click', () => {
+    if (elBtnToggleColorAssist) elBtnToggleColorAssist.click();
+  });
+}
+
+if (elBtnToggleColorAssist) {
+  elBtnToggleColorAssist.addEventListener('click', async () => {
+    isColorAssistActive = !isColorAssistActive;
+    colorAssistSettings.enabled = isColorAssistActive;
+    updateColorAssistSwitchUI(isColorAssistActive);
+    if (isColorAssistActive) {
+      elBtnToggleColorAssist.textContent = '🛑 DỪNG COLOR AIM ASSIST';
+      elBtnToggleColorAssist.classList.add('active');
+      if (elColorAssistStatus) {
+        elColorAssistStatus.textContent = `Đang bám mục tiêu: ${colorAssistSettings.color.toUpperCase()}`;
+        elColorAssistStatus.classList.add('active');
+      }
+    } else {
+      elBtnToggleColorAssist.textContent = '🎯 BẬT COLOR AIM ASSIST';
+      elBtnToggleColorAssist.classList.remove('active');
+      if (elColorAssistStatus) {
+        elColorAssistStatus.textContent = 'Đang tắt';
+        elColorAssistStatus.classList.remove('active');
+      }
+    }
+    const res = await window.api.toggleColorAssist({ enabled: isColorAssistActive });
+    updateFooterLog(`🎯 Color Aim Assist: ${isColorAssistActive ? 'ĐÃ KÍCH HOẠT' : 'ĐÃ TẮT'}`);
+  });
+}
+
+document.querySelectorAll('.btn-color-tag').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.btn-color-tag').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    colorAssistSettings.color = btn.getAttribute('data-color') || 'red';
+    window.api.updateColorAssistConfig({ color: colorAssistSettings.color });
+    updateFooterLog(`Đã đổi màu nhận diện mục tiêu sang: ${colorAssistSettings.color.toUpperCase()}`);
+  });
+});
+
+if (elRngFovSize) {
+  elRngFovSize.addEventListener('input', () => {
+    if (elLblFovSize) elLblFovSize.textContent = `${elRngFovSize.value} px`;
+    colorAssistSettings.fovSize = parseInt(elRngFovSize.value);
+    window.api.updateColorAssistConfig({ fovSize: colorAssistSettings.fovSize });
+  });
+}
+
+if (elRngSmoothSpeed) {
+  elRngSmoothSpeed.addEventListener('input', () => {
+    if (elLblSmoothSpeed) elLblSmoothSpeed.textContent = elRngSmoothSpeed.value;
+    colorAssistSettings.smoothSpeed = parseInt(elRngSmoothSpeed.value);
+    window.api.updateColorAssistConfig({ smoothSpeed: colorAssistSettings.smoothSpeed });
+  });
+}
+
+if (elChkTriggerBot) {
+  elChkTriggerBot.addEventListener('change', () => {
+    colorAssistSettings.triggerBot = elChkTriggerBot.checked;
+    window.api.updateColorAssistConfig({ triggerBot: elChkTriggerBot.checked });
+    updateFooterLog(`Triggerbot tự động bắn: ${elChkTriggerBot.checked ? 'BẬT' : 'TẮT'}`);
+  });
+}
+
+if (elSelEnemyFilter) {
+  elSelEnemyFilter.addEventListener('change', () => {
+    colorAssistSettings.filterMode = elSelEnemyFilter.value;
+    window.api.updateColorAssistConfig({ filterMode: elSelEnemyFilter.value });
+    updateFooterLog(`Đã áp dụng bộ lọc màu hiển thị: ${elSelEnemyFilter.options[elSelEnemyFilter.selectedIndex].text}`);
+  });
+}
+
 // ================= KHỞI CHẠY LẦN ĐẦU =================
 window.addEventListener('DOMContentLoaded', () => {
   loadProfiles();
@@ -980,5 +1736,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderCrosshairPreview();
   updateModeCardVisuals();
   updateDeviceList();
+  refreshBatteryStats();
   setInterval(updateDeviceList, 3000);
+  setInterval(refreshBatteryStats, 4000);
 });
