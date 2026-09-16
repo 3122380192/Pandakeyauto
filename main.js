@@ -920,6 +920,7 @@ ipcMain.handle('start-control', async (event, options = {}) => {
     renderDriver
   } = currentOptions;
 
+  const effectiveBuffer = (videoBuffer !== undefined && videoBuffer !== null) ? videoBuffer : (displayBuffer !== undefined && displayBuffer !== null ? displayBuffer : 0);
   const args = [];
 
   // ⭐ Dùng RCtrl cho phím tắt Scrcpy để KHÔNG xung đột với Alt+Left/Right của Pandakeyauto
@@ -973,7 +974,6 @@ ipcMain.handle('start-control', async (event, options = {}) => {
     }
 
     // 6. Khử độ trễ đệm hình ảnh (Scrcpy 3.1: dùng --video-buffer thay cho --display-buffer)
-    const effectiveBuffer = (videoBuffer !== undefined && videoBuffer !== null) ? videoBuffer : displayBuffer;
     if (effectiveBuffer !== undefined && effectiveBuffer !== null) {
       args.push(`--video-buffer=${effectiveBuffer}`);
     }
