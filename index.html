@@ -199,8 +199,8 @@
               <div class="tuning-item">
                 <label for="selCodec">Bộ Mã Hóa (Codec):</label>
                 <select id="selCodec" class="select-modern">
-                  <option value="h265" selected>H.265 / HEVC (Siêu Nhẹ)</option>
-                  <option value="h264">H.264 (Tương Thích Cao)</option>
+                  <option value="h264" selected>H.264 (Ổn Định Tuyệt Đối - Chống Văng)</option>
+                  <option value="h265">H.265 / HEVC (Siêu Nhẹ)</option>
                   <option value="av1">AV1 (Nén Cao Cấp)</option>
                 </select>
               </div>
@@ -209,9 +209,9 @@
               <div class="tuning-item">
                 <label for="selFps">Khung Hình (FPS):</label>
                 <select id="selFps" class="select-modern">
-                  <option value="120" selected>120 FPS (Phản Xạ Cực Nhanh)</option>
+                  <option value="60" selected>60 FPS (Chuẩn Mặc Định - Chống Quá Tải)</option>
                   <option value="90">90 FPS (Mượt Mà Ổn Định)</option>
-                  <option value="60">60 FPS (Chuẩn Mặc Định)</option>
+                  <option value="120">120 FPS (Tốc Độ Cực Cao)</option>
                   <option value="30">30 FPS (Tiết Kiệm Pin)</option>
                 </select>
               </div>
@@ -220,8 +220,8 @@
               <div class="tuning-item">
                 <label for="selDisplayBuffer">Bộ Đệm Trễ (Buffer):</label>
                 <select id="selDisplayBuffer" class="select-modern">
-                  <option value="0" selected>0 ms (Zero Delay Tức Thì)</option>
-                  <option value="10">10 ms (Cực Thấp Chống Giật)</option>
+                  <option value="10" selected>10 ms (Cực Thấp - Chống Giật / Rớt Frame)</option>
+                  <option value="0">0 ms (Zero Delay Tức Thì)</option>
                   <option value="25">25 ms (Ổn Định Cho Wi-Fi)</option>
                   <option value="50">50 ms (Mạng Chậm / Yếu)</option>
                 </select>
@@ -242,9 +242,9 @@
               <div class="tuning-item">
                 <label for="selBitrate">Băng Thông (Bitrate):</label>
                 <select id="selBitrate" class="select-modern">
-                  <option value="16M" selected>16 Mbps (Nét Căng Mặc Định)</option>
+                  <option value="12M" selected>12 Mbps (Chuẩn Nét Mượt - Chống Nóng Máy)</option>
+                  <option value="16M">16 Mbps (Nét Căng Mặc Định)</option>
                   <option value="24M">24 Mbps (Đồ Họa Cao Cấp)</option>
-                  <option value="12M">12 Mbps (Cân Bằng Mượt)</option>
                   <option value="8M">8 Mbps (Mạng Yếu / Treo Máy)</option>
                 </select>
               </div>
@@ -308,19 +308,19 @@
 
             <!-- CHỌN CHẾ ĐỘ: TAB BẢNG ĐEN HOẶC CHIẾU MÀN HÌNH -->
             <div class="mode-select-box">
-              <label class="mode-card-option active" id="lblModeBlackTab">
-                <input type="radio" name="mainControlMode" id="radModeBlackTab" value="blackTab" checked>
+              <label class="mode-card-option active" id="lblModeMirror">
+                <input type="radio" name="mainControlMode" id="radModeMirror" value="mirror" checked>
                 <div class="mode-card-content">
-                  <div class="mode-card-title">⬛ Tab Bảng Đen (Vùng Bắt Chuột)</div>
-                  <div class="mode-card-sub">⭐ Tối ưu tốc độ chuột nhất • 0% CPU • Đổi chuột Alt 0ms</div>
+                  <div class="mode-card-title">🖥️ Chiếu Màn Hình PC (Chống Văng)</div>
+                  <div class="mode-card-sub">⭐ Hiển thị trọn vẹn màn hình điện thoại mượt mà lên máy tính</div>
                 </div>
               </label>
 
-              <label class="mode-card-option" id="lblModeMirror">
-                <input type="radio" name="mainControlMode" id="radModeMirror" value="mirror">
+              <label class="mode-card-option" id="lblModeBlackTab">
+                <input type="radio" name="mainControlMode" id="radModeBlackTab" value="blackTab">
                 <div class="mode-card-content">
-                  <div class="mode-card-title">🖥️ Chiếu Màn Hình PC (120 FPS)</div>
-                  <div class="mode-card-sub">Hiển thị video màn hình điện thoại lên máy tính</div>
+                  <div class="mode-card-title">⬛ Tab Bảng Đen (Vùng Bắt Chuột)</div>
+                  <div class="mode-card-sub">Tối ưu độ trễ chuột • 0% CPU • Nhìn màn điện thoại</div>
                 </div>
               </label>
             </div>

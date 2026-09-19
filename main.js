@@ -1468,6 +1468,10 @@ async function startControlInternal(options = {}) {
 
   if (targetDeviceId) {
     args.push('-s', targetDeviceId);
+    // ⭐ Giữ điện thoại luôn thức và ngăn Android 14/15/16 tự ngắt kết nối USB khi đang chơi game
+    try {
+      exec(`"${adbPath}" -s "${targetDeviceId}" shell "svc power stayon true; settings put global stay_on_while_plugged_in 3"`, { windowsHide: true }, () => {});
+    } catch (e) {}
   }
 
   if (mirrorScreen) {
@@ -1481,18 +1485,15 @@ async function startControlInternal(options = {}) {
       }
     }
 
-    // 2. Video Codec tối ưu (H.264 ổn định tuyệt đối chống văng, H.265 hoặc AV1)
-    if (codec) {
-      args.push(`--video-codec=${codec}`);
-    } else {
-      args.push('--video-codec=h264');
-    }
+    // 2. Video Codec tối ưu (H.264 ổn định tuyệt đối chống văng cho mọi dòng máy, đặc biệt Vivo/MediaTek)
+    const safeCodec = codec || 'h264';
+    args.push(`--video-codec=${safeCodec}`);
 
-    // 3. Tốc độ khung hình cao (120 FPS / 90 FPS / 60 FPS)
-    args.push(`--max-fps=${fps || 120}`);
+    // 3. Tốc độ khung hình (Mặc định 60 FPS hoặc 90 FPS để chống quá nhiệt encoder)
+    args.push(`--max-fps=${fps || 60}`);
 
-    // 4. Bitrate truyền hình ảnh
-    args.push(`--video-bit-rate=${bitrate || '16M'}`);
+    // 4. Bitrate truyền hình ảnh (12M cực nét mà không nghẽn đệm)
+    args.push(`--video-bit-rate=${bitrate || '12M'}`);
 
     // 5. Độ phân giải tối đa
     if (maxSize && Number(maxSize) > 0) {
@@ -1509,8 +1510,9 @@ async function startControlInternal(options = {}) {
       args.push(`--render-driver=${renderDriver}`);
     }
 
-    // 8. Âm thanh độ trễ thấp
+    // 8. Âm thanh độ trễ thấp (Playback audio, chống xung đột micro khi chơi game)
     if (forwardAudio) {
+      args.push('--audio-source=playback');
       if (audioBuffer !== undefined && audioBuffer !== null) {
         args.push(`--audio-buffer=${audioBuffer}`);
       }
@@ -1532,14 +1534,14 @@ async function startControlInternal(options = {}) {
           args.push(`--window-height=${height}`);
           args.push('--window-x=0');
           args.push('--window-y=0');
-          sendLog(`🖥️ [Full View] Đã căn chỉnh cửa sổ tràn viền vừa vặn khung hình PC: ${width}x${height}`);
+          sendLog(`🖥️ [Full View] Cửa sổ tràn viền vừa vặn PC: ${width}x${height}`);
         } catch (e) {
           args.push('--fullscreen');
         }
       } else {
         // Mặc định Full View: Toàn màn hình PC
         args.push('--fullscreen');
-        sendLog('🖥️ [Full View] Đã kích hoạt chế độ Toàn Màn Hình Fullscreen 100%');
+        sendLog('🖥️ [Full View] Đã kích hoạt Toàn Màn Hình Fullscreen 100%');
       }
     }
 
@@ -1607,23 +1609,24 @@ async function startControlInternal(options = {}) {
       const errorDetail = lastErrorLines.slice(-4).join(' | ');
 
       // ⭐ CƠ CHẾ CHỐNG VĂNG & TỰ ĐỘNG KẾT NỐI LẠI (AUTO-RECONNECT)
-      if (wasSessionActive && autoReconnectEnabled && (code !== 0 || errorDetail.length > 0)) {
-        sendLog(`⚠️ Phiên chiếu màn hình bị gián đoạn (Mã: ${code}). Đang chuẩn bị tự động khôi phục kết nối...`);
+      if (wasSessionActive && autoReconnectEnabled) {
+        sendLog(`⚠️ Phiên chiếu màn hình bị gián đoạn (Mã: ${code}). Đang tự động khôi phục kết nối...`);
 
-        // Kiểm tra lỗi MediaCodec H.265 bị văng / sập
+        // Kiểm tra lỗi MediaCodec H.265 / MediaTek bị văng hoặc quá tải
         const isEncoderErr = errorDetail.includes('video-encoder') ||
                              errorDetail.includes('MediaCodec') ||
                              errorDetail.includes('Exception on thread') ||
                              errorDetail.includes('IllegalStateException') ||
                              errorDetail.includes('codec');
-        if (isEncoderErr && currentOptions.codec !== 'h264') {
-          sendLog(`⚡ Phát hiện bộ mã hóa phần cứng bị quá tải. Đang tự động chuyển sang H.264 ổn định...`);
+        if (isEncoderErr || currentOptions.codec === 'h265') {
+          sendLog(`⚡ Tự động kích hoạt H.264 (60 FPS, 10M) để chống quá tải chip điện thoại...`);
           currentOptions.codec = 'h264';
-          currentOptions.fps = Math.min(currentOptions.fps || 60, 60);
+          currentOptions.fps = 60;
+          currentOptions.bitrate = '10M';
         }
 
         if (errorDetail.includes('Audio') || errorDetail.includes('audio')) {
-          sendLog(`⚡ Lỗi âm thanh thiết bị. Tạm ngắt âm thanh để giữ màn hình ổn định không văng.`);
+          sendLog(`⚡ Tạm ngắt âm thanh để giữ kết nối màn hình liên tục.`);
           currentOptions.forwardAudio = false;
         }
 
@@ -1632,13 +1635,27 @@ async function startControlInternal(options = {}) {
         if (reconnectTimer) clearTimeout(reconnectTimer);
         reconnectTimer = setTimeout(() => {
           if (isSessionActive && !controlProcess) {
+            let isConnected = true;
+            if (targetDeviceId) {
+              try {
+                const devs = execSync(`"${adbPath}" devices`, { windowsHide: true }).toString();
+                isConnected = devs.includes(targetDeviceId);
+              } catch (e) {}
+            }
+            if (!isConnected) {
+              sendLog(`⚠️ Thiết bị ngắt kết nối USB. Vui lòng kiểm tra lại dây cáp!`);
+              isSessionActive = false;
+              sendSafe('otg-status', { running: false, code, error: 'Thiết bị ngắt kết nối USB' });
+              return;
+            }
+
             sendLog(`🔄 [Chống văng] Đang tự động kết nối lại màn hình...`);
             startControlInternal(currentOptions).catch(err => {
               sendLog(`❌ Kết nối lại không thành công: ${err.message}`);
               sendSafe('otg-status', { running: false, code, error: err.message });
             });
           }
-        }, 1500);
+        }, 1000);
       } else {
         isSessionActive = false;
         sendSafe('otg-status', { running: false, code, error: errorDetail });

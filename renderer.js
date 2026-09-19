@@ -363,11 +363,11 @@ async function startCurrentControl() {
     return;
   }
 
-  const isMirror = elRadModeMirror ? elRadModeMirror.checked : false;
+  const isMirror = elRadModeBlackTab ? !elRadModeBlackTab.checked : true;
   const options = {
     deviceId: currentDeviceId,
-    codec: elSelCodec.value,
-    fps: parseInt(elSelFps.value) || 120,
+    codec: elSelCodec.value || 'h264',
+    fps: parseInt(elSelFps.value) || 60,
     displayBuffer: parseInt(elSelDisplayBuffer.value) || 10,
     videoBuffer: parseInt(elSelDisplayBuffer.value) || 10,
     maxSize: parseInt(elSelMaxSize.value) || 1080,
