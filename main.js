@@ -954,6 +954,29 @@ ipcMain.handle('set-mouse-speed', async (event, speed) => {
   }
 });
 
+// ================= CÀI ĐẶT NÚT CHUYỂN ĐỔI CHUỘT (PC ⇋ ĐIỆN THOẠI) =================
+ipcMain.handle('get-switch-key', async () => {
+  try {
+    const switchFile = path.join(os.tmpdir(), 'pandakey_switch_key.txt');
+    if (fs.existsSync(switchFile)) {
+      return fs.readFileSync(switchFile, 'utf8').trim().toLowerCase();
+    }
+  } catch (e) {}
+  return 'alt';
+});
+
+ipcMain.handle('set-switch-key', async (event, key) => {
+  const chosenKey = (key || 'alt').toString().trim().toLowerCase();
+  try {
+    const switchFile = path.join(os.tmpdir(), 'pandakey_switch_key.txt');
+    fs.writeFileSync(switchFile, chosenKey);
+    sendLog(`⚙️ [Phím Nhanh] Đã cập nhật nút đổi chuột: ${chosenKey.toUpperCase()}`);
+    return { success: true, key: chosenKey };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+});
+
 // ================= 🎯 RECOIL CONTROL SYSTEM (WIN32 C# NATIVE ZERO DELAY) =================
 let recoilProcess = null;
 let recoilConfig = {
@@ -1374,19 +1397,32 @@ ipcMain.handle('update-color-assist-config', async (event, config = {}) => {
   return { success: true, config: colorAssistConfig };
 });
 
-// ================= KHỞI CHẠY SCRCPY VỚI TỐI ƯU HÓA HÌNH ẢNH & ĐỘ TRỄ =================
-ipcMain.handle('start-control', async (event, options = {}) => {
+// ================= KHỞI CHẠY SCRCPY VỚI TỐI ƯU HÓA HÌNH ẢNH, FULL VIEW & CHỐNG VĂNG =================
+let isSessionActive = false;
+let reconnectTimer = null;
+let autoReconnectEnabled = true;
+
+async function startControlInternal(options = {}) {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+
   if (controlProcess) {
-    stopActiveControl();
+    try { controlProcess.kill(); } catch (e) {}
+    controlProcess = null;
   }
 
   currentOptions = { ...currentOptions, ...options };
+  isSessionActive = true;
+  autoReconnectEnabled = (currentOptions.autoReconnect !== false);
+
   const {
     deviceId,
     mirrorScreen = false,
     enableControl = true,
     uhidInput = true,
-    stayAwake,
+    stayAwake = true,
     turnScreenOff,
     forwardAudio,
     fps,
@@ -1398,7 +1434,9 @@ ipcMain.handle('start-control', async (event, options = {}) => {
     audioBuffer,
     renderDriver,
     mouseSpeed = 'native',
-    recordGameplay = false
+    recordGameplay = false,
+    fullView = false,
+    fullViewMode = 'fullscreen'
   } = currentOptions;
 
   // Ghi tức thì cấu hình tốc độ chuột để switch_mouse.exe áp dụng hãm tốc độ phần cứng
@@ -1407,10 +1445,10 @@ ipcMain.handle('start-control', async (event, options = {}) => {
     fs.writeFileSync(speedFile, (mouseSpeed || '0.35').toString());
   } catch (e) {}
 
-  const effectiveBuffer = (videoBuffer !== undefined && videoBuffer !== null) ? videoBuffer : (displayBuffer !== undefined && displayBuffer !== null ? displayBuffer : 0);
+  const effectiveBuffer = (videoBuffer !== undefined && videoBuffer !== null) ? videoBuffer : (displayBuffer !== undefined && displayBuffer !== null ? displayBuffer : 10);
   const args = [];
 
-  // ⭐ Dùng RCtrl cho phím tắt Scrcpy để KHÔNG xung đột với Alt+Left/Right của Pandakeyauto
+  // ⭐ Dùng RCtrl cho phím tắt Scrcpy để KHÔNG xung đột với Alt/Ctrl của Pandakeyauto
   args.push('--shortcut-mod=rctrl');
 
   let targetDeviceId = deviceId;
@@ -1443,12 +1481,14 @@ ipcMain.handle('start-control', async (event, options = {}) => {
       }
     }
 
-    // 2. Video Codec tối ưu (H.265 / HEVC hoặc H.264 / AV1)
+    // 2. Video Codec tối ưu (H.264 ổn định tuyệt đối chống văng, H.265 hoặc AV1)
     if (codec) {
       args.push(`--video-codec=${codec}`);
+    } else {
+      args.push('--video-codec=h264');
     }
 
-    // 3. Tốc độ khung hình cao (120 FPS / 90 FPS)
+    // 3. Tốc độ khung hình cao (120 FPS / 90 FPS / 60 FPS)
     args.push(`--max-fps=${fps || 120}`);
 
     // 4. Bitrate truyền hình ảnh
@@ -1478,19 +1518,38 @@ ipcMain.handle('start-control', async (event, options = {}) => {
       args.push('--no-audio');
     }
 
-    // 9. Cửa sổ chiếu màn hình
-    args.push('--window-title=Pandakeyauto - Màn Hình Điện Thoại (Bấm Alt: Đổi Chuột)');
+    // 9. Cửa sổ chiếu màn hình & Tính năng Tự Động Vừa Khung Hình (Full View)
+    args.push('--window-title=Pandakeyauto - Man Hinh Dien Thoai (Full View)');
     args.push('--always-on-top');
+
+    if (fullView) {
+      if (fullViewMode === 'borderless') {
+        try {
+          const primaryDisplay = screen.getPrimaryDisplay();
+          const { width, height } = primaryDisplay.workAreaSize || primaryDisplay.bounds;
+          args.push('--window-borderless');
+          args.push(`--window-width=${width}`);
+          args.push(`--window-height=${height}`);
+          args.push('--window-x=0');
+          args.push('--window-y=0');
+          sendLog(`🖥️ [Full View] Đã căn chỉnh cửa sổ tràn viền vừa vặn khung hình PC: ${width}x${height}`);
+        } catch (e) {
+          args.push('--fullscreen');
+        }
+      } else {
+        // Mặc định Full View: Toàn màn hình PC
+        args.push('--fullscreen');
+        sendLog('🖥️ [Full View] Đã kích hoạt chế độ Toàn Màn Hình Fullscreen 100%');
+      }
+    }
 
     // 10. Tắt màn hình thật của điện thoại khi chiếu lên PC (nếu người dùng tích chọn checkbox)
     if (turnScreenOff) {
       args.push('--turn-screen-off');
     }
 
-    // 11. Giữ điện thoại luôn thức khi cắm cáp
-    if (stayAwake) {
-      args.push('--stay-awake');
-    }
+    // 11. Giữ điện thoại luôn thức khi cắm cáp (Luôn bật để chống tắt ngắt giữa chừng)
+    args.push('--stay-awake');
 
     // 12. Ghi hình trận đấu trực tiếp qua GPU máy tính (0% lag điện thoại)
     if (recordGameplay) {
@@ -1505,9 +1564,9 @@ ipcMain.handle('start-control', async (event, options = {}) => {
     // ⭐ TAB BẢNG ĐEN (VÙNG BẮT CHUỘT TRỰC TIẾP - 0% CPU, TỐI ƯU TỐC ĐỘ CHUỘT CHUẨN XÁC)
     args.push('-K', '-M', '--no-video-playback');
     args.push('--window-width=360', '--window-height=140');
-    args.push('--window-title=Pandakeyauto - Vung Bat Chuot (Nhan Alt de doi chuot)');
+    args.push('--window-title=Pandakeyauto - Vung Bat Chuot');
     args.push('--always-on-top');
-    if (stayAwake) args.push('--stay-awake');
+    args.push('--stay-awake');
     if (!forwardAudio) args.push('--no-audio');
   }
 
@@ -1537,17 +1596,57 @@ ipcMain.handle('start-control', async (event, options = {}) => {
     });
 
     controlProcess.on('close', (code) => {
+      const wasSessionActive = isSessionActive;
       controlProcess = null;
+
       // Khôi phục ngay lập tức tốc độ chuột PC gốc
       try {
         execFile(path.join(binDir, 'switch_mouse.exe'), ['--restore'], { windowsHide: true });
       } catch (e) {}
-      const errorDetail = lastErrorLines.slice(-3).join(' | ');
-      sendSafe('otg-status', { running: false, code, error: errorDetail });
+
+      const errorDetail = lastErrorLines.slice(-4).join(' | ');
+
+      // ⭐ CƠ CHẾ CHỐNG VĂNG & TỰ ĐỘNG KẾT NỐI LẠI (AUTO-RECONNECT)
+      if (wasSessionActive && autoReconnectEnabled && (code !== 0 || errorDetail.length > 0)) {
+        sendLog(`⚠️ Phiên chiếu màn hình bị gián đoạn (Mã: ${code}). Đang chuẩn bị tự động khôi phục kết nối...`);
+
+        // Kiểm tra lỗi MediaCodec H.265 bị văng / sập
+        const isEncoderErr = errorDetail.includes('video-encoder') ||
+                             errorDetail.includes('MediaCodec') ||
+                             errorDetail.includes('Exception on thread') ||
+                             errorDetail.includes('IllegalStateException') ||
+                             errorDetail.includes('codec');
+        if (isEncoderErr && currentOptions.codec !== 'h264') {
+          sendLog(`⚡ Phát hiện bộ mã hóa phần cứng bị quá tải. Đang tự động chuyển sang H.264 ổn định...`);
+          currentOptions.codec = 'h264';
+          currentOptions.fps = Math.min(currentOptions.fps || 60, 60);
+        }
+
+        if (errorDetail.includes('Audio') || errorDetail.includes('audio')) {
+          sendLog(`⚡ Lỗi âm thanh thiết bị. Tạm ngắt âm thanh để giữ màn hình ổn định không văng.`);
+          currentOptions.forwardAudio = false;
+        }
+
+        sendSafe('otg-status', { running: true, reconnecting: true, code, error: errorDetail });
+
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        reconnectTimer = setTimeout(() => {
+          if (isSessionActive && !controlProcess) {
+            sendLog(`🔄 [Chống văng] Đang tự động kết nối lại màn hình...`);
+            startControlInternal(currentOptions).catch(err => {
+              sendLog(`❌ Kết nối lại không thành công: ${err.message}`);
+              sendSafe('otg-status', { running: false, code, error: err.message });
+            });
+          }
+        }, 1500);
+      } else {
+        isSessionActive = false;
+        sendSafe('otg-status', { running: false, code, error: errorDetail });
+      }
     });
 
     const modeName = mirrorScreen
-      ? `Chiếu màn hình PC (${codec ? codec.toUpperCase() : 'H265'} | ${fps || 120} FPS)`
+      ? `Chiếu màn hình PC (${codec ? codec.toUpperCase() : 'H264'} | ${fps || 120} FPS${fullView ? ' | Full View' : ''})`
       : 'Tab Bảng Đen (Vùng Bắt Chuột - Tối Ưu Tốc Độ Chuột Nhất)';
 
     showOsdNotification({
@@ -1555,16 +1654,21 @@ ipcMain.handle('start-control', async (event, options = {}) => {
       game: 'KÍCH HOẠT THÀNH CÔNG',
       badge: `${fps || 120} FPS`,
       mode: modeName,
-      specs: 'Phím Alt: Đổi chuột PC <> ĐT • Giữ 100% cô lập máy tính'
+      specs: 'Phím nhanh chuyển chuột PC <> ĐT • Giữ 100% cô lập máy tính'
     });
 
     return {
       success: true,
-      message: `Đã kích hoạt [${modeName}]! Nhấn phím Alt để đổi chuột sang điện thoại (cô lập hoàn toàn với máy tính).`
+      message: `Đã kích hoạt [${modeName}]! Bấm nút chuyển chuột đã cài đặt để đổi chuột sang điện thoại.`
     };
   } catch (error) {
+    isSessionActive = false;
     return { success: false, message: error.message };
   }
+}
+
+ipcMain.handle('start-control', async (event, options = {}) => {
+  return startControlInternal(options);
 });
 
 ipcMain.handle('stop-control', async () => {
@@ -1572,6 +1676,11 @@ ipcMain.handle('stop-control', async () => {
 });
 
 function stopActiveControl() {
+  isSessionActive = false;
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
   if (controlProcess) {
     try {
       controlProcess.kill();

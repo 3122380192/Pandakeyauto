@@ -255,27 +255,48 @@ public class SwitchMouse {
         } catch {}
     }
 
-    // Đọc phím chuyển đổi cấu hình (Mặc định là Alt)
+    // Đọc phím/nút chuyển đổi cấu hình (Mặc định là Alt)
     private static int GetConfiguredSwitchVk() {
         try {
             string file = Path.Combine(Path.GetTempPath(), "pandakey_switch_key.txt");
             if (File.Exists(file)) {
                 string key = File.ReadAllText(file).Trim().ToLowerInvariant();
+                if (key == "alt" || key == "lalt" || key == "ralt") return 0x12;
+                if (key == "tilde" || key == "`" || key == "~") return 0xC0; // VK_OEM_3
+                if (key == "caps" || key == "capslock") return 0x14; // VK_CAPITAL
+                if (key == "ctrl" || key == "lctrl" || key == "rctrl") return 0x11; // VK_CONTROL
+                if (key == "tab") return 0x09; // VK_TAB
+                if (key == "space") return 0x20; // VK_SPACE
                 if (key == "f1") return 0x70;
                 if (key == "f2") return 0x71;
                 if (key == "f3") return 0x72;
                 if (key == "f4") return 0x73;
-                if (key == "tilde" || key == "`") return 0xC0;
-                if (key == "caps" || key == "capslock") return 0x14;
+                if (key == "f5") return 0x74;
+                if (key == "f6") return 0x75;
+                if (key == "f7") return 0x76;
+                if (key == "f8") return 0x77;
+                if (key == "f9") return 0x78;
+                if (key == "f10") return 0x79;
+                if (key == "f11") return 0x7A;
+                if (key == "f12") return 0x7B;
+                // Chuột: Giữa, Hông 1, Hông 2
+                if (key == "mbutton" || key == "middle" || key == "wheel") return 0x04; // VK_MBUTTON
+                if (key == "xbutton1" || key == "mouse4") return 0x05; // VK_XBUTTON1
+                if (key == "xbutton2" || key == "mouse5") return 0x06; // VK_XBUTTON2
+                int parsed;
+                if (int.TryParse(key, out parsed)) return parsed;
             }
         } catch {}
-        return VK_MENU;
+        return 0x12; // Mặc định là VK_MENU (Alt)
     }
 
     private static bool IsConfiguredSwitchKey(int vkCode) {
         int targetVk = GetConfiguredSwitchVk();
-        if (targetVk == VK_MENU) {
-            return (vkCode == VK_MENU || vkCode == VK_LMENU || vkCode == VK_RMENU);
+        if (targetVk == 0x12) {
+            return (vkCode == 0x12 || vkCode == 0xA4 || vkCode == 0xA5); // Alt, LAlt, RAlt
+        }
+        if (targetVk == 0x11) {
+            return (vkCode == 0x11 || vkCode == 0xA2 || vkCode == 0xA3); // Ctrl, LCtrl, RCtrl
         }
         return (vkCode == targetVk);
     }
@@ -531,10 +552,40 @@ public class SwitchMouse {
         return CallNextHookEx(_kbHookID, nCode, wParam, lParam);
     }
 
-    // ⭐ LOW-LEVEL MOUSE HOOK: NGĂN CHẶN 100% CLICK LỌT RA MÁY TÍNH KHI Ở TRONG ĐIỆN THOẠI
+    // ⭐ LOW-LEVEL MOUSE HOOK: HỖ TRỢ ĐỔI CHUỘT BẰNG CHUỘT GIỮA/HÔNG & CHẶN CLICK LỌT RA MÁY TÍNH
     private static IntPtr MouseHookCallback(int nCode, IntPtr wParam, IntPtr lParam) {
         if (nCode >= 0) {
             IntPtr scrcpyHwnd = GetScrcpyWindow();
+            int msg = wParam.ToInt32();
+
+            // ⭐ HỖ TRỢ CHUYỂN CHUỘT BẰNG NÚT CHUỘT (Chuột giữa, Chuột hông 4, 5)
+            int targetVk = GetConfiguredSwitchVk();
+            if (targetVk == 0x04 || targetVk == 0x05 || targetVk == 0x06) {
+                bool isTargetDown = false;
+                bool isTargetUp = false;
+
+                if (targetVk == 0x04) {
+                    isTargetDown = (msg == WM_MBUTTONDOWN);
+                    isTargetUp = (msg == WM_MBUTTONUP);
+                } else {
+                    MSLLHOOKSTRUCT hs = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
+                    int xbtn = (int)((hs.mouseData >> 16) & 0xffff);
+                    if ((targetVk == 0x05 && xbtn == 1) || (targetVk == 0x06 && xbtn == 2)) {
+                        isTargetDown = (msg == WM_XBUTTONDOWN);
+                        isTargetUp = (msg == WM_XBUTTONUP);
+                    }
+                }
+
+                if (isTargetDown) {
+                    if (scrcpyHwnd != IntPtr.Zero) {
+                        Toggle();
+                    }
+                    return (IntPtr)1; // Chặn click không lọt vào hệ thống
+                } else if (isTargetUp) {
+                    return (IntPtr)1; // Chặn nhả click
+                }
+            }
+
             bool isInsidePhone = false;
             if (scrcpyHwnd != IntPtr.Zero) {
                 IntPtr fg = GetForegroundWindow();
@@ -549,7 +600,6 @@ public class SwitchMouse {
                 POINT pt = hookStruct.pt;
                 bool isOutside = (pt.X < rect.Left || pt.X > rect.Right || pt.Y < rect.Top || pt.Y > rect.Bottom);
 
-                int msg = wParam.ToInt32();
                 bool isButtonDown = (msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN || msg == WM_XBUTTONDOWN);
 
                 // Nếu chuột bị lệch ra ngoài hoặc mất focus: lập tức kéo về tab và khóa chặt lại!

@@ -11,6 +11,8 @@ contextBridge.exposeInMainWorld('api', {
   startControl: (options) => ipcRenderer.invoke('start-control', options),
   stopControl: () => ipcRenderer.invoke('stop-control'),
   setMouseSpeed: (speed) => ipcRenderer.invoke('set-mouse-speed', speed),
+  getSwitchKey: () => ipcRenderer.invoke('get-switch-key'),
+  setSwitchKey: (key) => ipcRenderer.invoke('set-switch-key', key),
   sendKeyEvent: (payload) => ipcRenderer.invoke('send-keyevent', payload),
 
   // Profile & Game Mode APIs

@@ -195,6 +195,16 @@ const elBtnOpenUrl = document.getElementById('btnOpenUrl');
 const elBtnRestartAdb = document.getElementById('btnRestartAdb');
 const elBtnRefresh = document.getElementById('btnRefresh');
 
+// Switch Key, Full View & Auto-Reconnect Elements
+const elSelSwitchKey = document.getElementById('selSwitchKey');
+const elBadgeActiveSwitchKey = document.getElementById('badgeActiveSwitchKey');
+const elKbdSwitchKeyTop = document.getElementById('kbdSwitchKeyTop');
+const elChipSwitchKey = document.getElementById('chipSwitchKey');
+const elChkFullView = document.getElementById('chkFullView');
+const elSelFullViewMode = document.getElementById('selFullViewMode');
+const elRowFullViewMode = document.getElementById('rowFullViewMode');
+const elChkAutoReconnect = document.getElementById('chkAutoReconnect');
+
 function updateFooterLog(msg) {
   const time = new Date().toLocaleTimeString();
   elFooterLog.textContent = `[${time}] ${msg}`;
@@ -206,14 +216,18 @@ window.api.onOtgLog((msg) => {
 });
 
 window.api.onOtgStatus((status) => {
+  if (status.reconnecting) {
+    updateFooterLog(`🔄 [Chống văng] Màn hình bị gián đoạn, đang tự động kết nối lại trong 1.5 giây...`);
+    return;
+  }
   if (!status.running) {
     setControllingState(false);
     if (status.code !== 0 && status.code !== null && status.code !== undefined) {
-      updateFooterLog(`⚠️ Scrcpy đã dừng (Mã: ${status.code})${status.error ? ': ' + status.error : ''}`);
+      updateFooterLog(`⚠️ Phiên điều khiển đã dừng (Mã: ${status.code})${status.error ? ': ' + status.error : ''}`);
       if (status.error && status.error.includes('unauthorized')) {
         alert('⚠️ Điện thoại chưa được cấp quyền!\n\nVui lòng mở khóa điện thoại và chọn "Cho phép gỡ lỗi USB" (Allow USB debugging).');
       } else if (status.error && (status.error.includes('offline') || status.error.includes('closed'))) {
-        alert('⚠️ Thiết bị bị ngắt kết nối hoặc ở chế độ Offline. Vui lòng kiểm tra lại dây cáp USB!');
+        updateFooterLog('⚠️ Thiết bị bị ngắt kết nối. Vui lòng kiểm tra lại dây cáp USB!');
       }
     } else {
       updateFooterLog(`Đã dừng điều khiển.`);
@@ -235,10 +249,9 @@ window.api.onModeChanged((result) => {
     updateModeDisplay();
     updateFooterLog(`🎮 Đã chuyển sang [${result.profile.name} - ${result.mode.name}]!`);
     
-    // Nếu đang điều khiển và có thay đổi cấu hình, có thể reload lại để áp dụng tức thì
-    if (isControlling) {
-      updateFooterLog('⚡ Đang nạp cấu hình tối ưu mới cho phiên điều khiển hiện tại...');
-      startCurrentControl();
+    // Đồng bộ tốc độ chuột tức thì mà KHÔNG restart làm văng màn hình game
+    if (result.mode.mouseSpeed && window.api && window.api.setMouseSpeed) {
+      window.api.setMouseSpeed(result.mode.mouseSpeed);
     }
   }
 });
@@ -355,8 +368,8 @@ async function startCurrentControl() {
     deviceId: currentDeviceId,
     codec: elSelCodec.value,
     fps: parseInt(elSelFps.value) || 120,
-    displayBuffer: parseInt(elSelDisplayBuffer.value) || 0,
-    videoBuffer: parseInt(elSelDisplayBuffer.value) || 0,
+    displayBuffer: parseInt(elSelDisplayBuffer.value) || 10,
+    videoBuffer: parseInt(elSelDisplayBuffer.value) || 10,
     maxSize: parseInt(elSelMaxSize.value) || 1080,
     bitrate: elSelBitrate.value,
     renderDriver: elSelRenderDriver.value,
@@ -367,10 +380,14 @@ async function startCurrentControl() {
     turnScreenOff: elChkTurnScreenOff ? elChkTurnScreenOff.checked : false,
     forwardAudio: elChkForwardAudio ? elChkForwardAudio.checked : true,
     stayAwake: elChkStayAwake ? elChkStayAwake.checked : true,
+    fullView: elChkFullView ? elChkFullView.checked : true,
+    fullViewMode: elSelFullViewMode ? elSelFullViewMode.value : 'fullscreen',
+    autoReconnect: elChkAutoReconnect ? elChkAutoReconnect.checked : true,
     recordGameplay: !!(document.getElementById('chkAutoRecord') && document.getElementById('chkAutoRecord').checked)
   };
 
-  updateFooterLog(`Đang kích hoạt [${activeProfile ? activeProfile.name : 'Game'}]: ${options.codec.toUpperCase()} | ${options.fps} FPS | Đệm: ${options.displayBuffer}ms...`);
+  const modeDetailText = isMirror && options.fullView ? ` | Full View (${options.fullViewMode === 'borderless' ? 'Tràn viền' : 'Toàn màn hình'})` : '';
+  updateFooterLog(`Đang kích hoạt [${activeProfile ? activeProfile.name : 'Game'}]: ${options.codec.toUpperCase()} | ${options.fps} FPS${modeDetailText}...`);
   playSoundCue('activate');
 
   const res = await window.api.startControl(options);
@@ -424,19 +441,105 @@ if (elSelMouseSpeed) {
   });
 }
 
+// ================= CÀI ĐẶT & ĐỒNG BỘ PHÍM CHUYỂN CHUỘT (PC ⇋ ĐIỆN THOẠI) =================
+function formatSwitchKeyLabel(key) {
+  const k = (key || 'alt').toLowerCase();
+  switch (k) {
+    case 'alt': return 'ALT';
+    case 'tilde': return '~ (TILDE)';
+    case 'capslock': return 'CAPS LOCK';
+    case 'ctrl': return 'CTRL';
+    case 'tab': return 'TAB';
+    case 'f1': return 'F1';
+    case 'f2': return 'F2';
+    case 'f3': return 'F3';
+    case 'f4': return 'F4';
+    case 'mbutton': return 'CHUỘT GIỮA';
+    case 'xbutton1': return 'CHUỘT HÔNG 4';
+    case 'xbutton2': return 'CHUỘT HÔNG 5';
+    default: return k.toUpperCase();
+  }
+}
+
+function updateSwitchKeyDisplay(key) {
+  const label = formatSwitchKeyLabel(key);
+  if (elBadgeActiveSwitchKey) {
+    elBadgeActiveSwitchKey.textContent = `Nút: ${label}`;
+  }
+  if (elKbdSwitchKeyTop) {
+    elKbdSwitchKeyTop.textContent = label;
+  }
+  updateModeCardVisuals();
+}
+
+async function initSwitchKey() {
+  let currentKey = 'alt';
+  try {
+    if (window.api && window.api.getSwitchKey) {
+      currentKey = await window.api.getSwitchKey();
+    } else {
+      currentKey = localStorage.getItem('pandakey_switch_key') || 'alt';
+    }
+  } catch (e) {
+    currentKey = localStorage.getItem('pandakey_switch_key') || 'alt';
+  }
+
+  if (elSelSwitchKey) {
+    elSelSwitchKey.value = currentKey;
+  }
+  updateSwitchKeyDisplay(currentKey);
+}
+
+if (elSelSwitchKey) {
+  elSelSwitchKey.addEventListener('change', async () => {
+    const key = elSelSwitchKey.value;
+    try {
+      localStorage.setItem('pandakey_switch_key', key);
+      if (window.api && window.api.setSwitchKey) {
+        await window.api.setSwitchKey(key);
+      }
+      updateSwitchKeyDisplay(key);
+      updateFooterLog(`⚡ Đã đổi nút chuyển chuột sang: [${formatSwitchKeyLabel(key)}] (Có hiệu lực ngay 0ms)`);
+      playSoundCue('activate');
+    } catch (e) {
+      console.error(e);
+    }
+  });
+}
+
+if (elChipSwitchKey) {
+  elChipSwitchKey.addEventListener('click', () => {
+    if (typeof switchSubTab === 'function') {
+      switchSubTab('subtabTuning');
+    }
+    if (elSelSwitchKey) {
+      elSelSwitchKey.focus();
+      elSelSwitchKey.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+}
+
+if (elChkFullView && elRowFullViewMode) {
+  elChkFullView.addEventListener('change', () => {
+    elRowFullViewMode.style.display = elChkFullView.checked ? 'flex' : 'none';
+  });
+}
+
 // Đồng bộ giao diện khi chuyển đổi giữa Tab Bảng Đen và Chiếu Màn Hình PC
 function updateModeCardVisuals() {
   const isMirror = elRadModeMirror && elRadModeMirror.checked;
   if (elLblModeMirror) elLblModeMirror.classList.toggle('active', isMirror);
   if (elLblModeBlackTab) elLblModeBlackTab.classList.toggle('active', !isMirror);
 
+  const activeKeyName = elSelSwitchKey ? formatSwitchKeyLabel(elSelSwitchKey.value) : 'ALT';
+
   if (!isControlling) {
     if (isMirror) {
       if (elBtnMirrorTitle) elBtnMirrorTitle.textContent = 'BẮT ĐẦU CHIẾU MÀN HÌNH';
-      if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Chiếu lên PC & Tương tác chuột phím (Phím tắt: Nhấn Alt đổi chuột)';
+      if (elBtnMirrorSub) elBtnMirrorSub.textContent = `Chiếu lên PC & Tương tác chuột phím (Phím tắt: Bấm ${activeKeyName} đổi chuột)`;
     } else {
       if (elBtnMirrorTitle) elBtnMirrorTitle.textContent = 'BẮT ĐẦU ĐIỀU KHIỂN (TAB BẢNG ĐEN)';
-      if (elBtnMirrorSub) elBtnMirrorSub.textContent = 'Mở tab bắt chuột tối ưu tốc độ • Bấm Alt đổi chuột tức thì 0ms';
+      if (elBtnMirrorSub) elBtnMirrorSub.textContent = `Mở tab bắt chuột tối ưu tốc độ • Bấm ${activeKeyName} đổi chuột tức thì 0ms`;
     }
   }
 }
@@ -1785,6 +1888,7 @@ if (elSelEnemyFilter) {
 // ================= KHỞI CHẠY LẦN ĐẦU =================
 window.addEventListener('DOMContentLoaded', () => {
   loadProfiles();
+  initSwitchKey();
   initGithubConfig();
   renderCrosshairPreview();
   updateModeCardVisuals();

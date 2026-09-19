@@ -147,7 +147,9 @@
 
       <!-- QUICK SHORTCUTS MINI-HUD -->
       <div class="boss-hotkeys-bar">
-        <div class="hotkey-chip"><span class="kbd">Alt</span> Đổi Chuột PC ⇋ ĐT</div>
+        <div class="hotkey-chip hotkey-chip-interactive" id="chipSwitchKey" title="Bấm để chọn phím chuyển chuột nhanh">
+          <span class="kbd" id="kbdSwitchKeyTop">Alt</span> Đổi Chuột PC ⇋ ĐT
+        </div>
         <div class="hotkey-chip"><span class="kbd">Alt+Left/Right</span> Chuyển Chế Độ</div>
         <div class="hotkey-chip"><span class="kbd">Alt+X</span> Boss Key (Ẩn Gấp)</div>
         <div class="hotkey-chip"><span class="kbd">Alt+Z</span> Khóa Màn ĐT</div>
@@ -267,6 +269,31 @@
                   <option value="1.0">100% (Gốc PC - Không can thiệp)</option>
                 </select>
               </div>
+
+              <!-- Cài Đặt Nút Chuyển Chuột Nhanh PC ⇋ ĐT -->
+              <div class="tuning-item tuning-full-col switch-key-tuning-card">
+                <div class="switch-key-header">
+                  <label for="selSwitchKey">⚡ <strong>Nút Nhanh Chuyển Chuột (PC ⇋ Điện Thoại):</strong></label>
+                  <span class="switch-key-hint">Đổi chuột tức thì 0ms, không lag, cô lập 100%</span>
+                </div>
+                <div class="switch-key-input-row">
+                  <select id="selSwitchKey" class="select-modern select-switch-key">
+                    <option value="alt" selected>Phím Alt (Mặc định - Cực tiện tay)</option>
+                    <option value="tilde">Phím ~ (Tilde / Dấu huyền - Chuẩn PUBG / Gameloop)</option>
+                    <option value="capslock">Phím Caps Lock</option>
+                    <option value="ctrl">Phím Ctrl Trái (LCtrl)</option>
+                    <option value="tab">Phím Tab</option>
+                    <option value="f1">Phím F1</option>
+                    <option value="f2">Phím F2</option>
+                    <option value="f3">Phím F3</option>
+                    <option value="f4">Phím F4</option>
+                    <option value="mbutton">🖱️ Nút Chuột Giữa (Con lăn / Middle Click)</option>
+                    <option value="xbutton1">🖱️ Nút Chuột Hông 4 (XButton 1)</option>
+                    <option value="xbutton2">🖱️ Nút Chuột Hông 5 (XButton 2)</option>
+                  </select>
+                  <span class="switch-key-badge" id="badgeActiveSwitchKey">Phím: ALT</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -313,6 +340,30 @@
                   <small>Khắc phục triệt để lỗi Vivo/Xiaomi chặn phím.</small>
                 </div>
                 <input type="checkbox" id="chkUhidInput" checked>
+              </label>
+
+              <label class="checkbox-row highlight-check">
+                <div class="check-text">
+                  <strong>🖥️ Tự động vừa khung hình máy tính (Full View)</strong>
+                  <small>Chiếu toàn màn hình PC, tràn viền chuẩn 100% không bị co nhỏ hay viền đen.</small>
+                </div>
+                <input type="checkbox" id="chkFullView" checked>
+              </label>
+
+              <div class="sub-option-row" id="rowFullViewMode" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; margin-top: -6px; margin-bottom: 8px; background: rgba(0, 255, 204, 0.05); border-radius: 6px; border-left: 2px solid #00ffcc;">
+                <label for="selFullViewMode"><small>Kiểu hiển thị Full View:</small></label>
+                <select id="selFullViewMode" class="select-modern" style="padding: 4px 8px; font-size: 0.82rem; width: auto;">
+                  <option value="fullscreen" selected>Toàn màn hình (Fullscreen 100% PC)</option>
+                  <option value="borderless">Cửa sổ tràn viền vừa khít (Borderless Window)</option>
+                </select>
+              </div>
+
+              <label class="checkbox-row highlight-check">
+                <div class="check-text">
+                  <strong>🛡️ Chống văng màn hình (Tự động kết nối lại)</strong>
+                  <small>Tự phục hồi kết nối trong 1.5s nếu cáp lỏng hoặc chip mã hóa điện thoại gián đoạn.</small>
+                </div>
+                <input type="checkbox" id="chkAutoReconnect" checked>
               </label>
 
               <label class="checkbox-row">
